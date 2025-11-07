@@ -1,27 +1,31 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const routes = require('./routes');
+import express from "express";
+import morgan from "morgan";
+import cors from "cors";
+
+import albumsRouter from "./routes/albums.routes.js";
+import albumListensRouter from "./routes/albumListens.routes.js";
+import { initStorage } from "./storage.js";
 
 const app = express();
+
+// Middlewares
 app.use(cors());
+app.use(morgan("dev"));
 app.use(express.json());
-app.use(morgan('dev'));
 
-app.get('/', (req, res) => res.json({ ok: true, msg: 'Spotify mock API' }));
-app.use('/api', routes);
+// Inicializar archivos JSON
+await initStorage();
 
-// basic error handler
-app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+// Rutas
+app.use("/albums", albumsRouter);
+app.use("/album-listens", albumListensRouter);
+
+app.get("/", (req, res) => {
+  res.json({ message: "API de música usando filesystem 🎧" });
 });
 
-// Middleware para registrar la hora de la solicitud
-app.use((req, res, next) => {
-    console.log(`Solicitud recibida a las: ${new Date().toISOString()}`);
-    next();
+// Levantar servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
 });
-
-
-module.exports = app;
