@@ -1,22 +1,22 @@
 [
-  {
-    "id": "t1",
-    "name": "A Night at the Opera",
-    "time_listened_s": 200000,
-    "artists": [
-      {
-        "name": "Queen"
-      }
-    ]
-  },
-  {
-    "id": "t5",
-    "name": "A Day!!!!!!! at the Opera",
-    "time_listened_s": 215000,
-    "artists": [
-      {
-        "name": "King"
-      }
-    ]
-  }
+  { "id": 1,  "albumId": 1,  "user_id": 101, "times_listened": 4, "rating": 5 },
+  { "id": 2,  "albumId": 1,  "user_id": 102, "times_listened": 1, "rating": 4 },
+  { "id": 3,  "albumId": 2,  "user_id": 101, "times_listened": 2, "rating": 5 },
+  { "id": 4,  "albumId": 3,  "user_id": 103, "times_listened": 3, "rating": 4 },
+  { "id": 5,  "albumId": 4,  "user_id": 104, "times_listened": 1, "rating": 3 },
+  { "id": 6,  "albumId": 5,  "user_id": 105, "times_listened": 2, "rating": 5 },
+  { "id": 7,  "albumId": 6,  "user_id": 101, "times_listened": 1, "rating": 4 },
+  { "id": 8,  "albumId": 7,  "user_id": 106, "times_listened": 5, "rating": 5 },
+  { "id": 9,  "albumId": 8,  "user_id": 102, "times_listened": 2, "rating": 4 },
+  { "id": 10, "albumId": 9,  "user_id": 107, "times_listened": 1, "rating": 3 },
+  { "id": 11, "albumId": 10, "user_id": 108, "times_listened": 3, "rating": 4 },
+  { "id": 12, "albumId": 11, "user_id": 109, "times_listened": 1, "rating": 5 },
+  { "id": 13, "albumId": 12, "user_id": 110, "times_listened": 4, "rating": 5 },
+  { "id": 14, "albumId": 13, "user_id": 101, "times_listened": 2, "rating": 4 },
+  { "id": 15, "albumId": 14, "user_id": 104, "times_listened": 1, "rating": 3 },
+  { "id": 16, "albumId": 15, "user_id": 106, "times_listened": 2, "rating": 4 },
+  { "id": 17, "albumId": 16, "user_id": 107, "times_listened": 3, "rating": 5 },
+  { "id": 18, "albumId": 17, "user_id": 108, "times_listened": 1, "rating": 4 },
+  { "id": 19, "albumId": 18, "user_id": 109, "times_listened": 2, "rating": 5 },
+  { "id": 20, "albumId": 19, "user_id": 110, "times_listened": 1, "rating": 4 }
 ]
