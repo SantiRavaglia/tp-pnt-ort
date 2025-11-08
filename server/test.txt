@@ -1,0 +1,10 @@
+curl -X POST http://localhost:3000/album-listens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "t1",
+    "name": "A Day!!!!!!! at the Opera",
+    "time_listened_s": 215000,
+    "artists": [
+      { "name": "King" }
+    ]
+  }'
