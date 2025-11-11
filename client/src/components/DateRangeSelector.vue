@@ -2,6 +2,10 @@
 import { useUserMetricsStore } from '../stores/userMetrics'
 const store = useUserMetricsStore()
 
+function applyRange(start, end){
+  metrics.setRange({ start, end }) 
+}
+
 const options = [
   { key:'short_term',  label:'Últimas ~4 semanas' },
   { key:'medium_term', label:'~6 meses' },
