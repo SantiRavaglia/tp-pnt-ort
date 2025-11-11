@@ -7,6 +7,22 @@ import {
 
 const router = Router();
 
+/**
+ * FORMATO ESPERADO EN albumListens.json:
+ *
+ * [
+ *   {
+ *     "albumId": 19,
+ *     "user_id": 110,
+ *     "times_listened": 1,
+ *     "rating": 4
+ *   },
+ *   ...
+ * ]
+ *
+ * Clave lógica: (albumId, user_id)
+ */
+
 // GET /album-listens - obtener todos los registros
 router.get("/", async (req, res) => {
   try {
@@ -18,12 +34,16 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /album-listens/:id - obtener registro por id lógico (string, ej 't1')
-router.get("/:id", async (req, res) => {
+// GET /album-listens/:albumId/:userId - obtener un registro por (albumId, user_id)
+router.get("/:albumId/:userId", async (req, res) => {
   try {
     const listens = await readJson(ALBUM_LISTENS_FILE);
-    const { id } = req.params;
-    const listen = listens.find((l) => l.id === id);
+    const albumId = Number(req.params.albumId);
+    const userId = Number(req.params.userId);
+
+    const listen = listens.find(
+      (l) => l.albumId === albumId && l.user_id === userId
+    );
 
     if (!listen) {
       return res.status(404).json({ error: "Registro no encontrado" });
@@ -39,30 +59,45 @@ router.get("/:id", async (req, res) => {
 // POST /album-listens - crear registro de escucha
 router.post("/", async (req, res) => {
   try {
-    const { id, name, time_listened_s, artists } = req.body;
+    const { albumId, user_id, times_listened, rating } = req.body;
 
+    // Campos obligatorios según tu formato (rating lo podemos considerar opcional)
     if (
-      !id ||
-      !name ||
-      time_listened_s === undefined ||
-      !Array.isArray(artists) ||
-      artists.length === 0
+      albumId === undefined ||
+      user_id === undefined ||
+      times_listened === undefined
     ) {
-      return res.status(400).json({ error: "Faltan campos obligatorios" });
+      return res.status(400).json({
+        error:
+          "Faltan campos obligatorios. Se espera: albumId, user_id, times_listened (rating es opcional)"
+      });
     }
 
     const listens = await readJson(ALBUM_LISTENS_FILE);
 
-    if (listens.some((l) => l.id === id)) {
-      return res
-        .status(409)
-        .json({ error: "Ya existe un registro con ese id" });
+    // Evitamos duplicar la combinación (albumId, user_id)
+    if (
+      listens.some(
+        (l) => l.albumId === albumId && l.user_id === user_id
+      )
+    ) {
+      return res.status(409).json({
+        error:
+          "Ya existe un registro para ese albumId y user_id"
+      });
     }
 
-    const newListen = { id, name, time_listened_s, artists };
-    listens.push(newListen);
+    const newListen = {
+      albumId,
+      user_id,
+      times_listened,
+      // rating puede venir o no en el body
+      ...(rating !== undefined ? { rating } : {})
+    };
 
+    listens.push(newListen);
     await writeJson(ALBUM_LISTENS_FILE, listens);
+
     res.status(201).json(newListen);
   } catch (error) {
     console.error("Error al crear album-listen:", error);
@@ -70,26 +105,35 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PATCH /album-listens/:id - actualizar parcialmente el registro
-router.patch("/:id", async (req, res) => {
+// PATCH /album-listens/:albumId/:userId - actualizar parcialmente un registro
+router.patch("/:albumId/:userId", async (req, res) => {
   try {
-    const { id } = req.params;
+    const albumId = Number(req.params.albumId);
+    const userId = Number(req.params.userId);
     const updates = req.body;
 
     const listens = await readJson(ALBUM_LISTENS_FILE);
-    const index = listens.findIndex((l) => l.id === id);
+    const index = listens.findIndex(
+      (l) => l.albumId === albumId && l.user_id === userId
+    );
 
     if (index === -1) {
       return res.status(404).json({ error: "Registro no encontrado" });
     }
 
-    // No permitimos cambiar el id desde el patch por simplicidad
-    const { id: _ignore, ...restUpdates } = updates;
+    // No permitimos cambiar albumId ni user_id por simplicidad
+    const { albumId: _ignoreAlbumId, user_id: _ignoreUserId, ...restUpdates } =
+      updates;
 
-    const updatedListen = { ...listens[index], ...restUpdates };
+    const updatedListen = {
+      ...listens[index],
+      ...restUpdates
+      // Permitimos actualizar times_listened y rating principalmente
+    };
+
     listens[index] = updatedListen;
-
     await writeJson(ALBUM_LISTENS_FILE, listens);
+
     res.json(updatedListen);
   } catch (error) {
     console.error("Error al actualizar album-listen:", error);

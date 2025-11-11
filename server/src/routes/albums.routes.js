@@ -1,7 +1,27 @@
+// src/routes/albums.routes.js
 import { Router } from "express";
-import { ALBUMS_FILE, readJson, writeJson } from "../storage.js";
+import {
+  ALBUMS_FILE,
+  readJson,
+  writeJson
+} from "../storage.js";
 
 const router = Router();
+
+/**
+ * FORMATO ESPERADO EN albums.json:
+ *
+ * [
+ *   {
+ *     "id": 1,
+ *     "artist": "Queen",
+ *     "album": "A Night at the Opera",
+ *     "year": 1975,
+ *     "duration_s": 2880
+ *   },
+ *   ...
+ * ]
+ */
 
 // GET /albums - obtener todos los álbumes
 router.get("/", async (req, res) => {
@@ -19,6 +39,7 @@ router.get("/:id", async (req, res) => {
   try {
     const albums = await readJson(ALBUMS_FILE);
     const id = Number(req.params.id);
+
     const album = albums.find((a) => a.id === id);
 
     if (!album) {
@@ -37,6 +58,7 @@ router.post("/", async (req, res) => {
   try {
     const { id, artist, album, year, duration_s } = req.body;
 
+    // Validamos exactamente los campos de tu formato
     if (
       id === undefined ||
       !artist ||
@@ -44,19 +66,24 @@ router.post("/", async (req, res) => {
       year === undefined ||
       duration_s === undefined
     ) {
-      return res.status(400).json({ error: "Faltan campos obligatorios" });
+      return res.status(400).json({
+        error:
+          "Faltan campos obligatorios. Se espera: id, artist, album, year, duration_s"
+      });
     }
 
     const albums = await readJson(ALBUMS_FILE);
 
     if (albums.some((a) => a.id === id)) {
-      return res.status(409).json({ error: "Ya existe un álbum con ese id" });
+      return res
+        .status(409)
+        .json({ error: "Ya existe un álbum con ese id" });
     }
 
     const newAlbum = { id, artist, album, year, duration_s };
     albums.push(newAlbum);
-    await writeJson(ALBUMS_FILE, albums);
 
+    await writeJson(ALBUMS_FILE, albums);
     res.status(201).json(newAlbum);
   } catch (error) {
     console.error("Error al crear álbum:", error);
@@ -77,10 +104,16 @@ router.patch("/:id", async (req, res) => {
       return res.status(404).json({ error: "Álbum no encontrado" });
     }
 
-    // No permitimos cambiar el id desde el patch por simplicidad
+    // No permitimos cambiar el id por simplicidad
     const { id: _ignore, ...restUpdates } = updates;
 
-    const updatedAlbum = { ...albums[index], ...restUpdates };
+    // Solo mezclamos campos conocidos del formato
+    const updatedAlbum = {
+      ...albums[index],
+      ...restUpdates
+      // Quedan posibles keys: artist, album, year, duration_s
+    };
+
     albums[index] = updatedAlbum;
 
     await writeJson(ALBUMS_FILE, albums);
