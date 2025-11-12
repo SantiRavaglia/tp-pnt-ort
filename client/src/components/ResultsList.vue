@@ -7,7 +7,7 @@ import ResultCard from './ResultCard.vue';
 const musicStore = useMusicStore();
 
 // Utiliza storeToRefs para mantener la reactividad del estado
-const { searchResults, isLoading, error, searchQuery, searchType } = storeToRefs(musicStore);
+const { searchResults, isLoading, error, searchQuery, searchType, albumListens } = storeToRefs(musicStore);
 </script>
 
 <template>

@@ -12,7 +12,7 @@ const router = Router();
  *
  * [
  *   {
- *     "albumId": 19,
+ *     "album_id": 19,
  *     "user_id": 110,
  *     "times_listened": 1,
  *     "rating": 4
@@ -20,7 +20,7 @@ const router = Router();
  *   ...
  * ]
  *
- * Clave lógica: (albumId, user_id)
+ * Clave lógica: (album_id, user_id)
  */
 
 // GET /album-listens - obtener todos los registros
@@ -34,15 +34,15 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /album-listens/:albumId/:userId - obtener un registro por (albumId, user_id)
-router.get("/:albumId/:userId", async (req, res) => {
+// GET /album-listens/:album_id/:userId - obtener un registro por (album_id, user_id)
+router.get("/:album_id/:userId", async (req, res) => {
   try {
     const listens = await readJson(ALBUM_LISTENS_FILE);
-    const albumId = Number(req.params.albumId);
+    const album_id = Number(req.params.album_id);
     const userId = Number(req.params.userId);
 
     const listen = listens.find(
-      (l) => l.albumId === albumId && l.user_id === userId
+      (l) => l.album_id === album_id && l.user_id === userId
     );
 
     if (!listen) {
@@ -59,84 +59,58 @@ router.get("/:albumId/:userId", async (req, res) => {
 // POST /album-listens - crear registro de escucha
 router.post("/", async (req, res) => {
   try {
-    const { albumId, user_id, times_listened, rating } = req.body;
+    let { album_id, user_id, times_listened, rating } = req.body;
 
-    // Campos obligatorios según tu formato (rating lo podemos considerar opcional)
-    if (
-      albumId === undefined ||
-      user_id === undefined ||
-      times_listened === undefined
-    ) {
+    // Normalizamos a número por las dudas vengan como string
+    album_id = Number(album_id);
+    user_id = Number(user_id);
+
+    if (Number.isNaN(album_id) || Number.isNaN(user_id)) {
       return res.status(400).json({
-        error:
-          "Faltan campos obligatorios. Se espera: albumId, user_id, times_listened (rating es opcional)"
+        error: "album_id y user_id deben ser numéricos"
       });
     }
 
     const listens = await readJson(ALBUM_LISTENS_FILE);
 
-    // Evitamos duplicar la combinación (albumId, user_id)
-    if (
-      listens.some(
-        (l) => l.albumId === albumId && l.user_id === user_id
-      )
-    ) {
-      return res.status(409).json({
-        error:
-          "Ya existe un registro para ese albumId y user_id"
-      });
+    // Buscamos si ya existe la combinación (album_id, user_id)
+    const index = listens.findIndex(
+      (l) => l.album_id === album_id && l.user_id === user_id
+    );
+
+    // ✅ Si ya existe: incrementamos times_listened en 1
+    if (index !== -1) {
+      const current = listens[index];
+
+      const updatedListen = {
+        ...current,
+        times_listened: (current.times_listened || 0) + 1,
+        // si te mandan un rating nuevo, lo actualizás; si no, se mantiene
+        ...(rating !== undefined ? { rating } : {})
+      };
+
+      listens[index] = updatedListen;
+      await writeJson(ALBUM_LISTENS_FILE, listens);
+
+      // 200 OK porque estamos actualizando
+      return res.status(200).json(updatedListen);
     }
 
+    // 🆕 Si no existe: lo creamos como nuevo registro
     const newListen = {
-      albumId,
+      album_id,
       user_id,
-      times_listened,
-      // rating puede venir o no en el body
+      times_listened: times_listened ?? 1, // si no mandan, arranca en 1
       ...(rating !== undefined ? { rating } : {})
     };
 
     listens.push(newListen);
     await writeJson(ALBUM_LISTENS_FILE, listens);
 
+    // 201 Created porque es un registro nuevo
     res.status(201).json(newListen);
   } catch (error) {
-    console.error("Error al crear album-listen:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
-  }
-});
-
-// PATCH /album-listens/:albumId/:userId - actualizar parcialmente un registro
-router.patch("/:albumId/:userId", async (req, res) => {
-  try {
-    const albumId = Number(req.params.albumId);
-    const userId = Number(req.params.userId);
-    const updates = req.body;
-
-    const listens = await readJson(ALBUM_LISTENS_FILE);
-    const index = listens.findIndex(
-      (l) => l.albumId === albumId && l.user_id === userId
-    );
-
-    if (index === -1) {
-      return res.status(404).json({ error: "Registro no encontrado" });
-    }
-
-    // No permitimos cambiar albumId ni user_id por simplicidad
-    const { albumId: _ignoreAlbumId, user_id: _ignoreUserId, ...restUpdates } =
-      updates;
-
-    const updatedListen = {
-      ...listens[index],
-      ...restUpdates
-      // Permitimos actualizar times_listened y rating principalmente
-    };
-
-    listens[index] = updatedListen;
-    await writeJson(ALBUM_LISTENS_FILE, listens);
-
-    res.json(updatedListen);
-  } catch (error) {
-    console.error("Error al actualizar album-listen:", error);
+    console.error("Error al crear/actualizar album-listen:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
