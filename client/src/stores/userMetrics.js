@@ -29,7 +29,7 @@ export const useUserMetricsStore = defineStore('userMetrics', {
     // demo data
     tracks: [],    // [{id,title,artistId,duration}]
     artists: [],   // [{id,name}]
-    listens: [],   // [{id,userId,trackId,ts}]
+    listens: [],   // [{id,user_id,trackId,ts}]
 
     // control
     _loaded: false,
@@ -152,7 +152,7 @@ export const useUserMetricsStore = defineStore('userMetrics', {
       // listens en las últimas ~5 semanas (mismo estilo que veníamos usando)
       const L = []
       let id = 1
-      const push = (userId, trackId, iso) => L.push({ id: id++, userId, trackId, ts: iso })
+      const push = (user_id, trackId, iso) => L.push({ id: id++, user_id, trackId, ts: iso })
 
       const sample = [
         ['2025-10-14T12:01:00Z', 1001], ['2025-10-15T10:11:00Z', 1001],

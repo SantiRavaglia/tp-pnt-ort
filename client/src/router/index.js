@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
 import { useAuthStore } from '../stores/auth'
+import AlbumsListenedView from '../views/AlbumsListened.vue'
 
 const Login        = () => import('../views/Login.vue')
 const SearchMusic  = () => import('../views/SearchMusic.vue')
@@ -22,7 +23,8 @@ export const router = createRouter({
 
     { path: '/admin',        name: 'admin',        component: Admin,       meta: { auth: true, role: 'admin' } },
 
-    { path: '/:pathMatch(.*)*', redirect: '/' }
+    { path: '/:pathMatch(.*)*', redirect: '/' },
+    { path: '/estadisticas/albums-escuchados', name: 'AlbumsListened', component: AlbumsListenedView }
   ]
 })
 

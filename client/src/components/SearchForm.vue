@@ -3,14 +3,15 @@ import { ref } from 'vue'
 import { useMusicStore } from '../stores/musicStore'
 
 const musicStore = useMusicStore()
-// Inicializa la consulta con el valor actual del store o vacío
 const localQuery = ref(musicStore.searchQuery || '')
+musicStore.fetchAlbumListens();
 
 const handleSubmit = () => {
   if (localQuery.value.trim() === '') return
   
   // Llama a la acción del store
-  musicStore.fetchMusic(localQuery.value, musicStore.searchType)
+  musicStore.fetchAlbums(localQuery.value, musicStore.searchType);
+console.log(musicStore.albumListens);
 }
 
 const updateSearchType = (type) => {

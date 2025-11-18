@@ -60,32 +60,32 @@ export const useUsersStore = defineStore('users', {
 
     findUser(email, password) { return this.list.find(u => u.email === email && u.password === password) },
 
-    updateUser(userId, patch){
-      const i = this.list.findIndex(u => u.id === userId)
+    updateUser(user_id, patch){
+      const i = this.list.findIndex(u => u.id === user_id)
       if (i === -1) throw new Error('Usuario no encontrado')
       this.list[i] = { ...this.list[i], ...patch }
       this._save()
       const auth = useAuthStore()
-      if (auth.user?.id === userId) auth._refreshFromUsers(this.list[i])
+      if (auth.user?.id === user_id) auth._refreshFromUsers(this.list[i])
     },
 
-    setRole(userId, role){
-      const user = this.byId(userId)
+    setRole(user_id, role){
+      const user = this.byId(user_id)
       if (!user) throw new Error('Usuario no encontrado')
       if (user.role === 'admin' && role !== 'admin' && this.admins.length <= 1)
         throw new Error('Debe quedar al menos un administrador.')
-      this.updateUser(userId, { role })
+      this.updateUser(user_id, { role })
     },
 
-    removeUser(userId){
-      const user = this.byId(userId)
+    removeUser(user_id){
+      const user = this.byId(user_id)
       if (!user) return
       const auth = useAuthStore()
       if (user.role === 'admin' && this.admins.length <= 1)
         throw new Error('No podés eliminar al último administrador.')
-      this.list = this.list.filter(u => u.id !== userId)
+      this.list = this.list.filter(u => u.id !== user_id)
       this._save()
-      if (auth.user?.id === userId) auth.logout()
+      if (auth.user?.id === user_id) auth.logout()
     }
   }
 })

@@ -4,7 +4,8 @@
     <nav class="nav">
       <RouterLink v-if="auth.isAuthenticated" to="/" class="nav-btn">Inicio</RouterLink>
       <RouterLink v-if="auth.isAuthenticated" to="/playlist" class="nav-btn">Busqueda</RouterLink>
-      <RouterLink v-if="auth.isAuthenticated" to="/estadisticas" class="nav-btn">Estadísticas</RouterLink>
+
+      <RouterLink v-if="auth.isAuthenticated" to="/estadisticas/albums-escuchados" class="nav-btn">Estadísticas</RouterLink>
 
       <!-- si es admin, mostrar "Perfiles"; si no, "Perfil" -->
       <RouterLink v-if="auth.isAdmin" to="/perfiles" class="nav-btn">Perfiles</RouterLink>

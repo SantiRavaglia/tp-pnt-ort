@@ -10,29 +10,29 @@ const albums = [
   { id: 7003, name: 'Comfort y Música Para…',  artistId: 5003, year: 2001, genres: ['alt','rock'] }
 ]
 const tracks = [
-  { id:1001, title:'Puente',               artistId:5001, albumId:7001, duration:271, popularity:86, year:1999, genres:['rock','argentina'] },
-  { id:1002, title:'Crimen',               artistId:5001, albumId:7002, duration:244, popularity:90, year:2006, genres:['rock','argentina'] },
-  { id:1003, title:'De música ligera',     artistId:5002, albumId:7001, duration:190, popularity:95, year:1990, genres:['rock','argentina'] },
-  { id:1004, title:'El Loco',              artistId:5003, albumId:7003, duration:220, popularity:70, year:2001, genres:['alt','rock'] }
+  { id:1001, title:'Puente',               artistId:5001, album_id:7001, duration:271, popularity:86, year:1999, genres:['rock','argentina'] },
+  { id:1002, title:'Crimen',               artistId:5001, album_id:7002, duration:244, popularity:90, year:2006, genres:['rock','argentina'] },
+  { id:1003, title:'De música ligera',     artistId:5002, album_id:7001, duration:190, popularity:95, year:1990, genres:['rock','argentina'] },
+  { id:1004, title:'El Loco',              artistId:5003, album_id:7003, duration:220, popularity:70, year:2001, genres:['alt','rock'] }
 ]
 
 // Favoritos (eventos) y búsquedas (eventos)
 const favorites = [
-  { id:1, userId:3, entityType:'track',  entityId:1001, ts:'2025-11-05T10:10:00Z' },
-  { id:2, userId:3, entityType:'track',  entityId:1002, ts:'2025-11-06T12:22:00Z' },
-  { id:3, userId:3, entityType:'artist', entityId:5001, ts:'2025-11-06T12:25:00Z' },
-  { id:4, userId:3, entityType:'track',  entityId:1003, ts:'2025-11-07T18:40:00Z' },
-  { id:5, userId:3, entityType:'album',  entityId:7003, ts:'2025-11-09T09:05:00Z' },
-  { id:6, userId:3, entityType:'track',  entityId:1004, ts:'2025-11-10T14:20:00Z' }
+  { id:1, user_id:3, entityType:'track',  entityId:1001, ts:'2025-11-05T10:10:00Z' },
+  { id:2, user_id:3, entityType:'track',  entityId:1002, ts:'2025-11-06T12:22:00Z' },
+  { id:3, user_id:3, entityType:'artist', entityId:5001, ts:'2025-11-06T12:25:00Z' },
+  { id:4, user_id:3, entityType:'track',  entityId:1003, ts:'2025-11-07T18:40:00Z' },
+  { id:5, user_id:3, entityType:'album',  entityId:7003, ts:'2025-11-09T09:05:00Z' },
+  { id:6, user_id:3, entityType:'track',  entityId:1004, ts:'2025-11-10T14:20:00Z' }
 ]
 
 const searches = [
   // query libre y timestamp; así podemos graficar búsquedas/día
-  { id:1, userId:3, q:'cerati',      ts:'2025-11-05T10:05:00Z' },
-  { id:2, userId:3, q:'bocanada',    ts:'2025-11-06T11:00:00Z' },
-  { id:3, userId:3, q:'soda',        ts:'2025-11-07T18:00:00Z' },
-  { id:4, userId:3, q:'babasónicos', ts:'2025-11-09T09:00:00Z' },
-  { id:5, userId:3, q:'rock',        ts:'2025-11-10T14:00:00Z' }
+  { id:1, user_id:3, q:'cerati',      ts:'2025-11-05T10:05:00Z' },
+  { id:2, user_id:3, q:'bocanada',    ts:'2025-11-06T11:00:00Z' },
+  { id:3, user_id:3, q:'soda',        ts:'2025-11-07T18:00:00Z' },
+  { id:4, user_id:3, q:'babasónicos', ts:'2025-11-09T09:00:00Z' },
+  { id:5, user_id:3, q:'rock',        ts:'2025-11-10T14:00:00Z' }
 ]
 
 function wait(ms){ return new Promise(r=>setTimeout(r,ms)) }
@@ -50,14 +50,14 @@ export async function fetchCatalog(){
   }
 }
 
-export async function fetchFavoritesForUser(userId=3){
+export async function fetchFavoritesForUser(user_id=3){
   await wait(150)
-  return favorites.filter(f => f.userId === userId)
+  return favorites.filter(f => f.user_id === user_id)
 }
 
-export async function fetchSearchesForUser(userId=3){
+export async function fetchSearchesForUser(user_id=3){
   await wait(120)
-  return searches.filter(s => s.userId === userId)
+  return searches.filter(s => s.user_id === user_id)
 }
 
 export function computeKPIs({ favs }){

@@ -9,6 +9,8 @@ const dataDir = path.join(__dirname, "data");
 
 export const ALBUMS_FILE = path.join(dataDir, "albums.json");
 export const ALBUM_LISTENS_FILE = path.join(dataDir, "albumListens.json");
+export const GENRES_FILE = path.join(dataDir, "genres.json");
+export const GENRE_LISTENS_FILE = path.join(dataDir, "genreListens.json");
 
 async function ensureFile(filePath) {
   try {

@@ -1,0 +1,22 @@
+[
+  { "id": 1, "name": "Rock" },
+  { "id": 2, "name": "Pop" },
+  { "id": 3, "name": "Jazz" },
+  { "id": 4, "name": "Blues" },
+  { "id": 5, "name": "Classical" },
+  { "id": 6, "name": "Heavy Metal" },
+  { "id": 7, "name": "Punk" },
+  { "id": 8, "name": "Grunge" },
+  { "id": 9, "name": "Alternative Rock" },
+  { "id": 10, "name": "Hip Hop" },
+  { "id": 11, "name": "Rap" },
+  { "id": 12, "name": "R&B" },
+  { "id": 13, "name": "Soul" },
+  { "id": 14, "name": "Funk" },
+  { "id": 15, "name": "Electronic" },
+  { "id": 16, "name": "Synthpop" },
+  { "id": 17, "name": "Indie Rock" },
+  { "id": 18, "name": "Reggae" },
+  { "id": 19, "name": "Country" },
+  { "id": 20, "name": "Folk" }
+]
