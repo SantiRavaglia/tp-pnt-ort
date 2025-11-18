@@ -6,7 +6,6 @@ const KEY     = 'sl_users'
 const KEY_SEQ = 'sl_users_seq'
 
 function needsMigration(list) {
-  // si hay algún id "estilo timestamp" o ids duplicados/incongruentes
   return list.some(u => String(u.id).length > 6) ||
          new Set(list.map(u => u.id)).size !== list.length
 }
@@ -20,7 +19,6 @@ export const useUsersStore = defineStore('users', {
     ]
     let list = DB.get(KEY, defaultUsers)
 
-    // 🔧 MIGRACIÓN: si hay IDs largos o raros → reasignar 1..N manteniendo el orden
     if (needsMigration(list)) {
       const byId = [...list].sort((a,b) => a.id - b.id)
       list = byId.map((u, i) => ({ ...u, id: i + 1 }))
@@ -28,7 +26,6 @@ export const useUsersStore = defineStore('users', {
       DB.set(KEY_SEQ, list.length)
     }
 
-    // si no existe la secuencia, la calculo
     let seq = DB.get(KEY_SEQ, null)
     if (seq === null) {
       seq = list.reduce((m,u) => u.id > m ? u.id : m, 0)

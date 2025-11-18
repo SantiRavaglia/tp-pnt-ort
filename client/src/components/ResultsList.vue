@@ -1,12 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useMusicStore } from '../stores/musicStore';
-import ResultCard from './ResultCard.vue';
+import AlbumCard from './AlbumCard.vue';
 
-// Obtiene el store de Pinia
 const musicStore = useMusicStore();
 
-// Utiliza storeToRefs para mantener la reactividad del estado
 const { searchResults, isLoading, error, searchQuery, searchType, albumListens } = storeToRefs(musicStore);
 </script>
 
@@ -26,7 +24,7 @@ const { searchResults, isLoading, error, searchQuery, searchType, albumListens }
       <p class="summary-text">Se encontraron **{{ searchResults.length }}** discos.</p>
       
       <div class="cards-grid">
-        <ResultCard 
+        <AlbumCard 
           v-for="album in searchResults" 
           :key="album.id" 
           :album="album" 

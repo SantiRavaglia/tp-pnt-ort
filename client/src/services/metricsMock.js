@@ -1,4 +1,3 @@
-// Catálogo base (simplificado)
 const artists = [
   { id: 5001, name: 'Gustavo Cerati', genres: ['rock', 'latino'] },
   { id: 5002, name: 'Soda Stereo',    genres: ['rock', 'argentina'] },
@@ -16,7 +15,6 @@ const tracks = [
   { id:1004, title:'El Loco',              artistId:5003, album_id:7003, duration:220, popularity:70, year:2001, genres:['alt','rock'] }
 ]
 
-// Favoritos (eventos) y búsquedas (eventos)
 const favorites = [
   { id:1, user_id:3, entityType:'track',  entityId:1001, ts:'2025-11-05T10:10:00Z' },
   { id:2, user_id:3, entityType:'track',  entityId:1002, ts:'2025-11-06T12:22:00Z' },
@@ -27,7 +25,6 @@ const favorites = [
 ]
 
 const searches = [
-  // query libre y timestamp; así podemos graficar búsquedas/día
   { id:1, user_id:3, q:'cerati',      ts:'2025-11-05T10:05:00Z' },
   { id:2, user_id:3, q:'bocanada',    ts:'2025-11-06T11:00:00Z' },
   { id:3, user_id:3, q:'soda',        ts:'2025-11-07T18:00:00Z' },
@@ -80,7 +77,6 @@ export function topGenres({ favs, trackMap }, topN=6){
   return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0, topN)
 }
 
-// Series por día (últimos N días) para cualquier array con campo ts
 export function timeSeriesByDay(items, days=14){
   const ref = new Date()
   const buckets = []

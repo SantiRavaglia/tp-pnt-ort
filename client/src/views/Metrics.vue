@@ -115,15 +115,13 @@ import {
   timeSeriesByDay
 } from '../services/metricsMock'
 
-// estado
 const loading = ref(true)
 const error = ref('')
-const catalog = ref(null)   // { tracks, albums, artists, byId:{track,album,artist} }
-const favs = ref([])        // eventos de favoritos del usuario
-const searches = ref([])    // eventos de búsqueda del usuario
+const catalog = ref(null)   
+const favs = ref([])        
+const searches = ref([])    
 const kpis = ref({ total:0, countsByType:{ track:0, album:0, artist:0 }, lastTs:null })
 
-// filtros/orden de tabla
 const filterType = ref('')
 const q = ref('')
 const sortKey = ref('ts')
@@ -147,12 +145,10 @@ onMounted(async () => {
   }
 })
 
-// KPIs derivados
 const lastActivity = computed(() =>
   kpis.value.lastTs ? dayjs(kpis.value.lastTs).format('DD/MM HH:mm') : '—'
 )
 
-// ---------- DATASETS PARA CHARTS ----------
 const genresData = computed(() => {
   const top = topGenres({ favs: favs.value, trackMap: catalog.value?.byId.track || {} })
   return {
@@ -195,7 +191,6 @@ const timeCompareData = computed(() => {
   }
 })
 
-// ---------- TABLA----------
 const rows = computed(() => favs.value.map(f => {
   const name =
     f.entityType === 'track'  ? catalog.value?.byId.track[f.entityId]?.title  :
@@ -252,7 +247,6 @@ h1 {
   opacity: 0.7;
 }
 
-/* KPIs */
 .kpis {
   display: grid;
   gap: 0.8rem;
@@ -281,7 +275,6 @@ h1 {
   opacity: 0.9;
 }
 
-/* CHARTS */
 .charts {
   display: grid;
   gap: 1.2rem;
@@ -311,7 +304,6 @@ h1 {
   display: block;
 }
 
-/* TABLE */
 .table-card {
   background: #0f141b;
   border: 1px solid #202632;
@@ -361,7 +353,6 @@ td.type {
   opacity: 0.9;
 }
 
-/* RESPONSIVE */
 @media (max-width: 1100px) {
   .charts {
     grid-template-columns: 1fr;

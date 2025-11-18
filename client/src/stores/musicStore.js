@@ -5,10 +5,13 @@ export const useMusicStore = defineStore('music', {
     searchResults: [],
     searchQuery: '',
     searchType: 'artist',
+    searchEntity: 'albums',
     isLoading: false,
     error: null,
     albumListens: [],
-    allAlbums: []
+    allAlbums: [],
+    genres: [],        
+    genreListens: []
   }),
   
   actions: {
@@ -16,11 +19,16 @@ export const useMusicStore = defineStore('music', {
       this.searchType = type
     },
 
+    setSearchEntity(entity) {  
+      this.searchEntity = entity
+    },
+
     async fetchAlbums(query, type) {
       this.isLoading = true
       this.error = null
       this.searchQuery = query
       this.searchType = type
+      this.searchEntity = 'albums'
       try {
         const res = await fetch('http://localhost:3000/albums');
         if (!res.ok) {
@@ -80,12 +88,91 @@ export const useMusicStore = defineStore('music', {
       console.error('No se pudo registrar la escucha', e)
       await this.fetchAlbumListens()
     }
-  }
+  },
 
+  async fetchGenres() {
+      try {
+        const res = await fetch('http://localhost:3000/genres')
+        if (!res.ok) throw new Error('Error en la respuesta de la API')
+        this.genres = await res.json()
+      } catch (err) {
+        console.error('Error al obtener géneros:', err)
+        this.genres = []
+      }
+    },
+
+    async fetchGenreListens() {
+      try {
+        const res = await fetch('http://localhost:3000/genre-listens')
+        if (!res.ok) throw new Error('Error en la respuesta de la API')
+        this.genreListens = await res.json()
+      } catch (err) {
+        console.error('Error al obtener genre listens:', err)
+        this.genreListens = []
+      }
+    },
+
+    async incrementGenreListen(genreId, userId) {
+      const i = this.genreListens.findIndex(
+        l => (l.genre_id ?? l.genreId) === genreId && l.user_id === userId
+      )
+
+      if (i !== -1) {
+        const current = this.genreListens[i]
+        const key = current.genre_id ?? current.genreId
+        this.genreListens[i] = {
+          ...current,
+          genre_id: key,
+          times_listened: (current.times_listened || 0) + 1
+        }
+      } else {
+        this.genreListens.push({
+          genre_id: genreId,
+          user_id: userId,
+          times_listened: 1
+        })
+      }
+
+      try {
+        await fetch('http://localhost:3000/genre-listens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ genre_id: genreId, user_id: userId })
+        })
+      } catch (e) {
+        console.error('No se pudo registrar la escucha de género', e)
+        await this.fetchGenreListens()
+      }
+    },
+
+    async searchGenres(query) {
+      this.isLoading = true
+      this.error = null
+      this.searchQuery = query
+      this.searchEntity = 'genres'
+      try {
+        const res = await fetch('http://localhost:3000/genres')
+        if (!res.ok) throw new Error('Error en la respuesta de la API')
+        const genres = await res.json()
+        this.genres = genres
+
+        const q = query.toLowerCase()
+        this.searchResults = genres.filter(g =>
+          g.name.toLowerCase().includes(q)
+        )
+      } catch (err) {
+        this.error = 'Error al buscar géneros. Intente de nuevo.'
+        this.searchResults = []
+      } finally {
+        this.isLoading = false
+      }
+    }
 
   },
+  
   getters: {
     resultsCount: (state) => state.searchResults.length, 
+
     albumsWithListens: (s) => {
       const totals = new Map()
       for (const l of s.albumListens) {
@@ -100,6 +187,28 @@ export const useMusicStore = defineStore('music', {
           total_listens: totals.get(a.id) || 0
         }))
         .filter(a => a.total_listens > 0)
+        .sort((a, b) => b.total_listens - a.total_listens)
+    },
+
+    genresWithListens: (s) => {
+      if (!s.genreListens.length || !s.genres.length) return []
+
+      const totals = new Map()
+
+      for (const l of s.genreListens) {
+        if (!l) continue
+        const genreKey = l.genre_id ?? l.genreId
+        if (!genreKey) continue
+        const prev = totals.get(genreKey) || 0
+        totals.set(genreKey, prev + (l.times_listened || 0))
+      }
+
+      return s.genres
+        .map(g => ({
+          ...g,
+          total_listens: totals.get(g.id) || 0
+        }))
+        .filter(g => g.total_listens > 0)
         .sort((a, b) => b.total_listens - a.total_listens)
     }
   }

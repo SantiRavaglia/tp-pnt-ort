@@ -7,23 +7,6 @@ import {
 
 const router = Router();
 
-/**
- * FORMATO ESPERADO EN albumListens.json:
- *
- * [
- *   {
- *     "album_id": 19,
- *     "user_id": 110,
- *     "times_listened": 1,
- *     "rating": 4
- *   },
- *   ...
- * ]
- *
- * Clave lógica: (album_id, user_id)
- */
-
-// GET /album-listens - obtener todos los registros
 router.get("/", async (req, res) => {
   try {
     const listens = await readJson(ALBUM_LISTENS_FILE);
@@ -34,7 +17,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /album-listens/:album_id/:user_id - obtener un registro por (album_id, user_id)
 router.get("/:album_id/:user_id", async (req, res) => {
   try {
     const listens = await readJson(ALBUM_LISTENS_FILE);
@@ -56,12 +38,10 @@ router.get("/:album_id/:user_id", async (req, res) => {
   }
 });
 
-// POST /album-listens - crear registro de escucha
 router.post("/", async (req, res) => {
   try {
     let { album_id, user_id, times_listened, rating } = req.body;
 
-    // Normalizamos a número por las dudas vengan como string
     album_id = Number(album_id);
     user_id = Number(user_id);
 
@@ -73,41 +53,35 @@ router.post("/", async (req, res) => {
 
     const listens = await readJson(ALBUM_LISTENS_FILE);
 
-    // Buscamos si ya existe la combinación (album_id, user_id)
     const index = listens.findIndex(
       (l) => l.album_id === album_id && l.user_id === user_id
     );
 
-    // ✅ Si ya existe: incrementamos times_listened en 1
     if (index !== -1) {
       const current = listens[index];
 
       const updatedListen = {
         ...current,
         times_listened: (current.times_listened || 0) + 1,
-        // si te mandan un rating nuevo, lo actualizás; si no, se mantiene
         ...(rating !== undefined ? { rating } : {})
       };
 
       listens[index] = updatedListen;
       await writeJson(ALBUM_LISTENS_FILE, listens);
 
-      // 200 OK porque estamos actualizando
       return res.status(200).json(updatedListen);
     }
 
-    // 🆕 Si no existe: lo creamos como nuevo registro
     const newListen = {
       album_id,
       user_id,
-      times_listened: times_listened ?? 1, // si no mandan, arranca en 1
+      times_listened: times_listened ?? 1, 
       ...(rating !== undefined ? { rating } : {})
     };
 
     listens.push(newListen);
     await writeJson(ALBUM_LISTENS_FILE, listens);
 
-    // 201 Created porque es un registro nuevo
     res.status(201).json(newListen);
   } catch (error) {
     console.error("Error al crear/actualizar album-listen:", error);

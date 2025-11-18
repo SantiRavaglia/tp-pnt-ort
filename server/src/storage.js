@@ -16,7 +16,6 @@ async function ensureFile(filePath) {
   try {
     await fs.access(filePath);
   } catch {
-    // Si el archivo no existe, lo inicializamos como un array vacío
     await fs.writeFile(filePath, "[]", "utf-8");
   }
 }
@@ -33,7 +32,6 @@ export async function readJson(filePath) {
     return JSON.parse(content);
   } catch (err) {
     console.error(`Error parseando JSON en ${filePath}:`, err);
-    // Si algo está corrupto, devolvemos array vacío
     return [];
   }
 }

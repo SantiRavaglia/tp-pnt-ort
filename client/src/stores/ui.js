@@ -1,4 +1,3 @@
-// client/src/stores/ui.js
 import { defineStore } from 'pinia'
 
 const K_SIDEBAR = 'sl_sidebar_open'
@@ -6,10 +5,8 @@ let toastId = 0
 
 export const useUiStore = defineStore('ui', {
   state: () => ({
-    // toasts
-    toasts: [], // { id, text, type }
+    toasts: [], 
 
-    // confirm modal
     confirm: {
       open: false,
       title: '',
@@ -19,12 +16,10 @@ export const useUiStore = defineStore('ui', {
       _resolver: null
     },
 
-    // sidebar
     sidebarOpen: JSON.parse(localStorage.getItem(K_SIDEBAR) ?? 'true')
   }),
 
   actions: {
-    // --- Toasts ---
     toast(text, type = 'info', timeout = 2200) {
       const id = ++toastId
       this.toasts.push({ id, text, type })
@@ -34,7 +29,6 @@ export const useUiStore = defineStore('ui', {
       this.toasts = this.toasts.filter(t => t.id !== id)
     },
 
-    // --- Confirm modal ---
     ask({ title = 'Confirmar', message = '¿Deseás continuar?', confirmText = 'Sí', cancelText = 'Cancelar' } = {}) {
       return new Promise((resolve) => {
         this.confirm.open = true
@@ -51,7 +45,6 @@ export const useUiStore = defineStore('ui', {
     confirmYes() { this.confirm._resolver?.(true) },
     confirmNo()  { this.confirm._resolver?.(false) },
 
-    // --- Sidebar ---
     setSidebar(val) {
       this.sidebarOpen = !!val
       localStorage.setItem(K_SIDEBAR, JSON.stringify(this.sidebarOpen))

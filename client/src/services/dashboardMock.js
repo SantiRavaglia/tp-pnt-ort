@@ -1,4 +1,3 @@
-//EJEMPLO DE MUESTRA
 const artists = [
   { id: 5001, name: 'Gustavo Cerati' },
   { id: 5002, name: 'Soda Stereo' },

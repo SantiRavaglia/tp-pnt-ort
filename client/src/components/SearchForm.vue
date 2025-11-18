@@ -9,13 +9,11 @@ musicStore.fetchAlbumListens();
 const handleSubmit = () => {
   if (localQuery.value.trim() === '') return
   
-  // Llama a la acción del store
   musicStore.fetchAlbums(localQuery.value, musicStore.searchType);
 console.log(musicStore.albumListens);
 }
 
 const updateSearchType = (type) => {
-  // Llama a la acción/mutación del store para actualizar el tipo
   musicStore.setSearchType(type)
 }
 </script>
@@ -50,7 +48,7 @@ const updateSearchType = (type) => {
           :checked="musicStore.searchType === 'album'" 
           @change="updateSearchType('album')"
           name="search-type"
-          > Álbum
+          > Nombre
         </label>
         <label>
           <input 

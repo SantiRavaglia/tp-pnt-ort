@@ -67,15 +67,12 @@ const users = useUsersStore()
 const auth  = useAuthStore()
 const ui    = useUiStore()
 
-// estado editable por fila (no toca el store hasta guardar)
 const drafts = reactive({})
 
-// inicializa/replica el estado editable cuando cambia la lista
 function hydrateDrafts() {
   users.list.forEach(u => {
     drafts[u.id] = drafts[u.id] || { name: u.name, email: u.email, role: u.role }
   })
-  // limpia drafts huérfanos si se borró alguien
   Object.keys(drafts).forEach(id => {
     if (!users.list.find(u => u.id === Number(id))) delete drafts[id]
   })

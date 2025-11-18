@@ -2,11 +2,9 @@
 import { defineProps, computed } from 'vue';
 import { useAuthStore } from '../stores/auth.js';
 import { storeToRefs  } from 'pinia';
-import { useMusicStore } from '../stores/musicStore'
+import { useMusicStore } from '../stores/musicStore.js'
 
-// Define las propiedades (props) que este componente espera recibir
 const props = defineProps({
-  // Se espera un objeto llamado 'album' con los siguientes campos
   album: {
     type: Object,
     required: true,
