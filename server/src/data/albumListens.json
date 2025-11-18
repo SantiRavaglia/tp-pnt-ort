@@ -143,5 +143,10 @@
     "album_id": 86,
     "user_id": 4,
     "times_listened": 10
+  },
+  {
+    "album_id": 83,
+    "user_id": 4,
+    "times_listened": 23
   }
 ]
