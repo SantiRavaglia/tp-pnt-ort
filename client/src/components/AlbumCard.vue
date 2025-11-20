@@ -33,6 +33,18 @@ const genreName = computed(() => {
   return g ? g.name : 'Género desconocido'
 })
 
+const listens = computed(() => {
+  const u = user.value
+  if (!u) return null
+
+  const arr = musicStore.albumListens || []
+  return (
+    arr.find(
+      (l) => l.album_id === props.album.id && l.user_id === u.id
+    ) || null
+  )
+})
+
 async function addTimesListened() {
   if (!isAuthenticated.value || !user.value) return
   await musicStore.incrementAlbumListen(props.album.id, user.value.id)
@@ -56,6 +68,9 @@ async function addTimesListened() {
       </p>
       <p>
         <strong>Género:</strong> {{ genreName }}
+      </p>
+      <p>
+        <strong>Escuchado:</strong> {{ listens?.times_listened ?? 0 }}
       </p>
     </div>
 

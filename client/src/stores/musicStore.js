@@ -190,17 +190,21 @@ export const useMusicStore = defineStore('music', {
         .sort((a, b) => b.total_listens - a.total_listens)
     },
 
-    genresWithListens: (s) => {
-      if (!s.genreListens.length || !s.genres.length) return []
+     
+    genresWithListens(s) {
+      
+      if (!s.genres.length || !s.albums.length || !s.albumListens.length) return []
 
-      const totals = new Map()
+      const totals = new Map() // genreId -> total de escuchas
 
-      for (const l of s.genreListens) {
-        if (!l) continue
-        const genreKey = l.genre_id
-        if (!genreKey) continue
-        const prev = totals.get(genreKey) || 0
-        totals.set(genreKey, prev + (l.times_listened || 0))
+      for (const listen of s.albumListens) {
+        if (!listen) continue
+        const album = s.albums.find(a => a.id === listen.album_id)
+        if (!album || !album.genre_id) continue
+
+        const genreId = album.genre_id
+        const prev = totals.get(genreId) || 0
+        totals.set(genreId, prev + (listen.times_listened || 0))
       }
 
       return s.genres
@@ -210,6 +214,12 @@ export const useMusicStore = defineStore('music', {
         }))
         .filter(g => g.total_listens > 0)
         .sort((a, b) => b.total_listens - a.total_listens)
+    },
+
+    
+    mostListenedGenre() {
+      const list = this.genresWithListens
+      return list.length ? list[0] : null
     },
 
     genreTimeByUser: (s) => (userId) => {
@@ -251,7 +261,7 @@ export const useMusicStore = defineStore('music', {
 
   getAlbums() {
     if (!this.albums.length) {
-      fetchAlbums('', 'artist');
+      this.fetchAlbums('', 'artist');
     } 
     return this.albums;
   },
@@ -273,6 +283,24 @@ export const useMusicStore = defineStore('music', {
       return Array.from(totals, ([name, total_listens]) => ({ name, total_listens }))
         .sort((a, b) => b.total_listens - a.total_listens)
         .slice(0, 5)
-    }
+    },
+
+  totalPlays() {
+    return this.albumsWithListens
+      .reduce((acc, a) => acc + a.total_listens, 0)
+  },
+
+  
+  albumsWithListensCount() {
+    return this.albumsWithListens.length
+  },
+
+  mostListenedArtist() {
+    const artists = this.topArtists
+    if (!artists.length) return null
+    return artists[0]       // { name, total_listens }
+  },
+
+    
   }
 })

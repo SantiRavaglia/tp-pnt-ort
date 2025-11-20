@@ -168,5 +168,100 @@
     "album_id": 33,
     "user_id": 4,
     "times_listened": 8
+  },
+  {
+    "album_id": 1,
+    "user_id": 3,
+    "times_listened": 24
+  },
+  {
+    "album_id": 2,
+    "user_id": 3,
+    "times_listened": 6
+  },
+  {
+    "album_id": 4,
+    "user_id": 3,
+    "times_listened": 2
+  },
+  {
+    "album_id": 3,
+    "user_id": 3,
+    "times_listened": 1
+  },
+  {
+    "album_id": 22,
+    "user_id": 3,
+    "times_listened": 3
+  },
+  {
+    "album_id": 23,
+    "user_id": 3,
+    "times_listened": 2
+  },
+  {
+    "album_id": 9,
+    "user_id": 3,
+    "times_listened": 1
+  },
+  {
+    "album_id": 1,
+    "user_id": 5,
+    "times_listened": 14
+  },
+  {
+    "album_id": 85,
+    "user_id": 5,
+    "times_listened": 1
+  },
+  {
+    "album_id": 83,
+    "user_id": 5,
+    "times_listened": 6
+  },
+  {
+    "album_id": 47,
+    "user_id": 5,
+    "times_listened": 26
+  },
+  {
+    "album_id": 2,
+    "user_id": 5,
+    "times_listened": 3
+  },
+  {
+    "album_id": 3,
+    "user_id": 5,
+    "times_listened": 4
+  },
+  {
+    "album_id": 7,
+    "user_id": 5,
+    "times_listened": 2
+  },
+  {
+    "album_id": 8,
+    "user_id": 5,
+    "times_listened": 2
+  },
+  {
+    "album_id": 9,
+    "user_id": 5,
+    "times_listened": 2
+  },
+  {
+    "album_id": 6,
+    "user_id": 5,
+    "times_listened": 1
+  },
+  {
+    "album_id": 5,
+    "user_id": 5,
+    "times_listened": 1
+  },
+  {
+    "album_id": 4,
+    "user_id": 5,
+    "times_listened": 1
   }
 ]
