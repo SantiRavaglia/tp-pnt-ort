@@ -1,16 +1,27 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useMusicStore } from '../stores/musicStore'
 
 const musicStore = useMusicStore()
 const localQuery = ref(musicStore.searchQuery || '')
-musicStore.fetchAlbumListens();
 
-const handleSubmit = () => {
+const searchEntity = computed({
+  get: () => musicStore.searchEntity,
+  set: (val) => musicStore.setSearchEntity(val)
+})
+
+const isAlbumMode = computed(() => searchEntity.value === 'albums')
+
+musicStore.fetchAlbumListens()
+
+const handleSubmit = async () => {
   if (localQuery.value.trim() === '') return
   
-  musicStore.fetchAlbums(localQuery.value, musicStore.searchType);
-console.log(musicStore.albumListens);
+  if (searchEntity.value === 'albums') {
+    await musicStore.fetchAlbums(localQuery.value, musicStore.searchType)
+  } else {
+    await musicStore.searchGenres(localQuery.value)
+  }
 }
 
 const updateSearchType = (type) => {
@@ -20,12 +31,34 @@ const updateSearchType = (type) => {
 
 <template>
   <form @submit.prevent="handleSubmit" class="card">
-    
     <div class="card" style="margin-bottom:16px">
+      <div style="margin-bottom: 8px;">
+        <label>
+          <input
+            type="radio"
+            value="albums"
+            v-model="searchEntity"
+            name="search-entity"
+          />
+          Álbumes
+        </label>
+        <label style="margin-left: 12px;">
+          <input
+            type="radio"
+            value="genres"
+            v-model="searchEntity"
+            name="search-entity"
+          />
+          Géneros
+        </label>
+      </div>
+
       <input 
         type="text" 
         v-model="localQuery" 
-        placeholder="Buscar por Artista, Álbum o Año..."
+        :placeholder="isAlbumMode 
+          ? 'Buscar por Artista, Álbum o Año...' 
+          : 'Buscar por nombre de género...'"
         required
       >
       <button type="submit" :disabled="musicStore.isLoading || localQuery === ''">
@@ -33,34 +66,33 @@ const updateSearchType = (type) => {
         <span v-else>🔍 Buscar</span>
       </button>
       
-      <!-- <div class="card" style="margin-bottom:16px"> -->
+      <div v-if="isAlbumMode" style="margin-top: 8px;">
         <label>
           <input 
-          type="radio" 
-          :checked="musicStore.searchType === 'artist'" 
-          @change="updateSearchType('artist')"
-          name="search-type"
+            type="radio" 
+            :checked="musicStore.searchType === 'artist'" 
+            @change="updateSearchType('artist')"
+            name="search-type"
           > Artista
         </label>
         <label>
           <input 
-          type="radio" 
-          :checked="musicStore.searchType === 'album'" 
-          @change="updateSearchType('album')"
-          name="search-type"
+            type="radio" 
+            :checked="musicStore.searchType === 'album'" 
+            @change="updateSearchType('album')"
+            name="search-type"
           > Nombre
         </label>
         <label>
           <input 
-          type="radio" 
-          :checked="musicStore.searchType === 'year'" 
-          @change="updateSearchType('year')"
-          name="search-type"
+            type="radio" 
+            :checked="musicStore.searchType === 'year'" 
+            @change="updateSearchType('year')"
+            name="search-type"
           > Año
         </label>
-      <!-- </div> -->
+      </div>
     </div>
-    
   </form>
 </template>
 

@@ -1,6 +1,17 @@
 <script setup>
+import { onMounted } from 'vue'
 import SearchForm from '../components/SearchForm.vue'
 import ResultsList from '../components/ResultsList.vue'
+import { useMusicStore } from '../stores/musicStore'
+
+const musicStore = useMusicStore()
+
+onMounted(async () => {
+  if (!musicStore.genres.length) {
+    await musicStore.fetchGenres();
+    await musicStore.fetchAlbums("", "artist");
+  }
+})
 </script>
 
 <template>

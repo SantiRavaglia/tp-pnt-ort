@@ -2,9 +2,13 @@
 import { ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMusicStore } from '../stores/musicStore'
+import { useAuthStore } from '../stores/auth'
 
 const musicStore = useMusicStore()
-const { albumsWithListens, genresWithListens, isLoading } = storeToRefs(musicStore)
+const authStore = useAuthStore()
+
+const { albumsWithListens, isLoading } = storeToRefs(musicStore)
+const { user } = storeToRefs(authStore)
 
 const mode = ref('albums')
 
@@ -27,21 +31,22 @@ function formatDuration(seconds) {
   return `${seconds} segundo(s)`
 }
 
+const genreStats = computed(() => {
+  if (!user.value) return []
+  return musicStore.genreTimeByUser(user.value.id)
+})
+
 const isStatsLoading = computed(() => isLoading.value)
 
 onMounted(async () => {
-  if (!musicStore.allAlbums.length) {
+  if (!musicStore.albums.length) {
     await musicStore.fetchAlbums('', 'artist')
   }
   if (!musicStore.albumListens.length) {
     await musicStore.fetchAlbumListens()
   }
-
   if (!musicStore.genres?.length) {
     await musicStore.fetchGenres()
-  }
-  if (!musicStore.genreListens?.length) {
-    await musicStore.fetchGenreListens()
   }
 })
 </script>
@@ -93,25 +98,31 @@ onMounted(async () => {
     </template>
 
     <template v-else>
-      <p v-if="genresWithListens.length === 0">
-        Todavía no hay géneros con escuchas registradas.
+      <p v-if="!user">
+        Debés estar logueado para ver estadísticas por género.
       </p>
 
-      <ul v-else class="items-list">
-        <li
-          v-for="genre in genresWithListens"
-          :key="genre.id"
-          class="item"
-        >
-          <div class="item-main">
-            <span class="item-title">{{ genre.name }}</span>
-          </div>
-          <div class="item-metrics">
-            Veces escuchadas:
-            <strong>{{ genre.total_listens }}</strong>
-          </div>
-        </li>
-      </ul>
+      <template v-else>
+        <p v-if="genreStats.length === 0">
+          Todavía no hay géneros con tiempo escuchado registrado para tu usuario.
+        </p>
+
+        <ul v-else class="items-list">
+          <li
+            v-for="genre in genreStats"
+            :key="genre.id"
+            class="item"
+          >
+            <div class="item-main">
+              <span class="item-title">{{ genre.name }}</span>
+            </div>
+            <div class="item-metrics">
+              Tiempo escuchado:
+              <strong>{{ formatDuration(genre.total_seconds) }}</strong>
+            </div>
+          </li>
+        </ul>
+      </template>
     </template>
   </div>
 </template>

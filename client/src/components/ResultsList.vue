@@ -1,11 +1,19 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { useMusicStore } from '../stores/musicStore';
-import AlbumCard from './AlbumCard.vue';
+import { storeToRefs } from 'pinia'
+import { useMusicStore } from '../stores/musicStore'
+import AlbumCard from './AlbumCard.vue'
 
-const musicStore = useMusicStore();
+const musicStore = useMusicStore()
+const { 
+  searchResults, 
+  isLoading, 
+  error, 
+  searchQuery, 
+  searchType, 
+  albumListens,
+  searchEntity
+} = storeToRefs(musicStore)
 
-const { searchResults, isLoading, error, searchQuery, searchType, albumListens } = storeToRefs(musicStore);
 </script>
 
 <template>
@@ -13,7 +21,13 @@ const { searchResults, isLoading, error, searchQuery, searchType, albumListens }
     <h2>Resultados de Búsqueda</h2>
 
     <div v-if="isLoading" class="status-message loading">
-      Cargando resultados para '{{ searchQuery }}' por {{ searchType }}...
+      Cargando resultados para '{{ searchQuery }}' 
+      <span v-if="searchEntity === 'albums'">
+        por {{ searchType }}...
+      </span>
+      <span v-else>
+        en géneros...
+      </span>
     </div>
 
     <div v-else-if="error" class="status-message error">
@@ -21,23 +35,43 @@ const { searchResults, isLoading, error, searchQuery, searchType, albumListens }
     </div>
 
     <div v-else-if="searchResults.length > 0">
-      <p class="summary-text">Se encontraron **{{ searchResults.length }}** discos.</p>
+      <p class="summary-text">
+        Se encontraron 
+        <strong>{{ searchResults.length }}</strong>
+        {{ searchEntity === 'albums' ? 'discos' : 'géneros' }}.
+      </p>
       
-      <div class="cards-grid">
+      <div v-if="searchEntity === 'albums'" class="cards-grid">
         <AlbumCard 
           v-for="album in searchResults" 
           :key="album.id" 
           :album="album" 
         />
       </div>
+
+      <ul v-else class="genres-list">
+        <li 
+          v-for="genre in searchResults"
+          :key="genre.id"
+          class="genre-item"
+        >
+          {{ genre.name }}
+        </li>
+      </ul>
     </div>
     
     <div v-else-if="searchQuery" class="status-message no-results">
-      No se encontraron resultados para **'{{ searchQuery }}'** en la búsqueda por **{{ searchType }}**.
+      No se encontraron resultados para 
+      <strong>'{{ searchQuery }}'</strong>
+      en la búsqueda por 
+      <strong>
+        {{ searchEntity === 'albums' ? searchType : 'género' }}
+      </strong>.
     </div>
     
     <div v-else class="status-message initial">
-      Utiliza el formulario superior para buscar discos musicales.
+      Utiliza el formulario superior para buscar 
+      {{ searchEntity === 'albums' ? 'discos musicales' : 'géneros musicales' }}.
     </div>
 
   </div>
@@ -87,7 +121,18 @@ h2 {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Diseño adaptable */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
+}
+
+.genres-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.genre-item {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 </style>

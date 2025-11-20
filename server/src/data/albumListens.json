@@ -122,7 +122,7 @@
   {
     "album_id": 85,
     "user_id": 4,
-    "times_listened": 126
+    "times_listened": 135
   },
   {
     "album_id": 73,
@@ -148,5 +148,25 @@
     "album_id": 83,
     "user_id": 4,
     "times_listened": 23
+  },
+  {
+    "album_id": 44,
+    "user_id": 4,
+    "times_listened": 3
+  },
+  {
+    "album_id": 51,
+    "user_id": 4,
+    "times_listened": 3
+  },
+  {
+    "album_id": 58,
+    "user_id": 4,
+    "times_listened": 3
+  },
+  {
+    "album_id": 33,
+    "user_id": 4,
+    "times_listened": 8
   }
 ]

@@ -9,7 +9,7 @@ export const useMusicStore = defineStore('music', {
     isLoading: false,
     error: null,
     albumListens: [],
-    allAlbums: [],
+    albums: [],
     genres: [],        
     genreListens: []
   }),
@@ -35,7 +35,7 @@ export const useMusicStore = defineStore('music', {
           throw new Error('Error en la respuesta de la API');
         }
         const results = await res.json();
-        this.allAlbums = results;
+        this.albums = results;
 
         const queryLower = query.toLowerCase();
 
@@ -114,12 +114,12 @@ export const useMusicStore = defineStore('music', {
 
     async incrementGenreListen(genreId, userId) {
       const i = this.genreListens.findIndex(
-        l => (l.genre_id ?? l.genreId) === genreId && l.user_id === userId
+        l => (l.genre_id) === genreId && l.user_id === userId
       )
 
       if (i !== -1) {
         const current = this.genreListens[i]
-        const key = current.genre_id ?? current.genreId
+        const key = current.genre_id
         this.genreListens[i] = {
           ...current,
           genre_id: key,
@@ -181,7 +181,7 @@ export const useMusicStore = defineStore('music', {
         totals.set(l.album_id, prev + (l.times_listened || 0))
       }
 
-      return s.allAlbums
+      return s.albums
         .map(a => ({
           ...a,
           total_listens: totals.get(a.id) || 0
@@ -197,7 +197,7 @@ export const useMusicStore = defineStore('music', {
 
       for (const l of s.genreListens) {
         if (!l) continue
-        const genreKey = l.genre_id ?? l.genreId
+        const genreKey = l.genre_id
         if (!genreKey) continue
         const prev = totals.get(genreKey) || 0
         totals.set(genreKey, prev + (l.times_listened || 0))
@@ -210,6 +210,51 @@ export const useMusicStore = defineStore('music', {
         }))
         .filter(g => g.total_listens > 0)
         .sort((a, b) => b.total_listens - a.total_listens)
+    },
+
+    genreTimeByUser: (s) => (userId) => {
+    if (!userId || !s.albums.length || !s.albumListens.length || !s.genres.length) {
+      return []
     }
+
+    const timePerGenre = new Map() // genreId -> segundos totales
+
+    for (const listen of s.albumListens) {
+      if (!listen) continue
+      if (listen.user_id !== userId) continue
+
+      const albumId = listen.album_id
+      if (!albumId) continue
+
+      const album = s.albums.find(a => a.id === albumId)
+      if (!album) continue
+
+      const genreId = album.genre_id
+      if (!genreId) continue
+
+      const durationSeconds = album.duration_s || 0
+      const times = listen.times_listened || 0
+      const totalSeconds = durationSeconds * times
+
+      const prev = timePerGenre.get(genreId) || 0
+      timePerGenre.set(genreId, prev + totalSeconds)
+    }
+
+    return s.genres
+      .map(g => ({
+        ...g,
+        total_seconds: timePerGenre.get(g.id) || 0
+      }))
+      .filter(g => g.total_seconds > 0)
+      .sort((a, b) => b.total_seconds - a.total_seconds)
+  },
+
+  getAlbums() {
+    if (!this.albums.length) {
+      fetchAlbums('', 'artist');
+    } 
+    return this.albums;
+  }
+
   }
 })

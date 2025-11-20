@@ -2,9 +2,19 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserMetricsStore } from '../stores/userMetrics'
 import ChartCard from '../components/ChartCard.vue'
+import { useMusicStore } from '../stores/musicStore'
 
+const musicStore = useMusicStore()
 const store = useUserMetricsStore()
-onMounted(() => { store.ensureDemoLoaded?.() })
+
+onMounted(async () => {
+  () => { store.ensureDemoLoaded?.(); }
+  if (!musicStore.genres.length) {
+    await musicStore.fetchGenres()
+    await musicStore.fetchAlbums('', 'artist')
+    await musicStore.fetchAlbumListens()
+  }
+})
 
 const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1)
 function formatDayLabel(iso) {               
