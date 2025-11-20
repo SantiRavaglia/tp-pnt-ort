@@ -1,250 +1,352 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useUserMetricsStore } from '../stores/userMetrics'
-import ChartCard from '../components/ChartCard.vue'
+import { onMounted, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useMusicStore } from '../stores/musicStore'
+import { useAuthStore } from '../stores/auth'
+import { useHighlightsStore } from '../stores/highlights'
+
 
 const musicStore = useMusicStore()
-const store = useUserMetricsStore()
+const authStore  = useAuthStore()
+const highlights = useHighlightsStore()
+
+
+const { isAdmin } = storeToRefs(authStore)
+
 
 onMounted(async () => {
-  () => { store.ensureDemoLoaded?.(); }
-  if (!musicStore.genres.length) {
-    await musicStore.fetchGenres()
-    await musicStore.fetchAlbums('', 'artist')
+ 
+
+
+  // Cargamos los datos globales si no están
+  if (!musicStore.allAlbums.length) {
+    await musicStore.fetchAlbums('', 'artist') // query vacío → trae todos
+  }
+  if (!musicStore.albumListens.length) {
     await musicStore.fetchAlbumListens()
   }
 })
 
-const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1)
-function formatDayLabel(iso) {               
-  const [y,m,d] = iso.split('-')
-  return `${d}-${m}`
-}
-function monthNameEs(ym) {                   
-  const date = new Date(`${ym}-01T00:00:00`)
-  const name = date.toLocaleDateString('es-AR', { month: 'long' })
-  return capitalize(name)
-}
 
-const tendenciaLista = computed(() => {
-  const entries = Object.entries(store.tendenciaPorDia || {})
-  entries.sort((a,b)=> a[0].localeCompare(b[0])) 
-  return entries
-})
+const topAlbums   = computed(() => musicStore.topAlbums)
+const topArtists  = computed(() => musicStore.topArtists)
+const albumsWithListens = computed(() => musicStore.albumsWithListens)
 
-const agg = ref('daily') 
-const tendenciaMensual = computed(() => {
-  const buckets = {}
-  for (const [day, count] of tendenciaLista.value) {
-    const month = day.slice(0,7) 
-    buckets[month] = (buckets[month] || 0) + count
-  }
-  return Object.entries(buckets).sort((a,b)=> a[0].localeCompare(b[0]))
-})
 
-const barLabels = computed(() =>
-  agg.value === 'daily'
-    ? tendenciaLista.value.map(([d]) => formatDayLabel(d))  
-    : tendenciaMensual.value.map(([m]) => monthNameEs(m))   
+const totalPlays = computed(() =>
+  albumsWithListens.value.reduce((acc, a) => acc + a.total_listens, 0)
 )
 
-const barSeries = computed(() =>
-  agg.value === 'daily'
-    ? tendenciaLista.value.map(([_, c]) => c)
-    : tendenciaMensual.value.map(([_, c]) => c)
-)
 
-const barData = computed(() => ({
-  labels: barLabels.value,
-  datasets: [{
-    label: 'Reproducciones',
-    data: barSeries.value,
-    borderWidth: 1
-  }]
-}))
+const totalAlbumsConEscuchas = computed(() => albumsWithListens.value.length)
 
-const xTitle = computed(() => agg.value === 'daily' ? 'Día' : 'Mes')
 
-const barOptions = computed(() => ({
-  plugins: { legend: { display:false }, tooltip:{ enabled:true } },
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: { beginAtZero:true, ticks:{ precision:0 } },
-    x: {
-      title: { display:true, text: xTitle.value, color:'#cfd8e3' },
-      ticks: { color:'#cfd8e3', maxRotation: 0, minRotation: 0, autoSkip: true }
-    }
-  }
-}))
-
-function setRange(days) {
-  const now = new Date()
-  const start = new Date(now)
-  start.setDate(start.getDate() - days)
-  store.setRange({ start, end: now })
+function toggleAlbumHighlight(id) {
+  if (!isAdmin.value) return
+  highlights.toggleAlbum(id)
 }
-function setHistorical() { store.clearRange() }
-
-const distRows = computed(() => {
-  if (Array.isArray(store.topCanciones) && store.topCanciones.length) {
-    return store.topCanciones.map(t => ({
-      trackId: t.id ?? t.trackId,
-      name: t.title ?? t.name,
-      count: t.count
-    }))
-  }
-  const byId = store.mapTrackById || {}
-  const src = Array.isArray(store.distribucionPorCancion) ? store.distribucionPorCancion : []
-  return src.map(r => ({
-    trackId: r.trackId,
-    name: byId[r.trackId]?.title || byId[r.trackId]?.name || `#${r.trackId}`,
-    count: r.count
-  }))
-})
-const distMax = computed(() => distRows.value.reduce((m,r)=> Math.max(m,r.count), 1))
+function toggleArtistHighlight(name) {
+  if (!isAdmin.value) return
+  highlights.toggleArtist(name)
+}
 </script>
 
+
 <template>
-  <div class="container">
-    <div class="toolbar">
+  <div class="dashboard">
+    <header class="header">
       <div>
-        <h2>Panel de Métricas</h2>
-        <p class="subtitle">Vista demo sin datos reales de Spotify.</p>
+        <h1>Resumen global de escuchas</h1>
+        <p class="subtitle">
+          Estadísticas armadas a partir de todos los usuarios del sistema.
+        </p>
       </div>
-      <div class="toolbar-actions">
-        <button class="range-btn" @click="setRange(28)">Últimas ~4 semanas</button>
-        <button class="range-btn" @click="setRange(180)">~6 meses</button>
-        <button class="range-btn" @click="setHistorical()">Histórico</button>
-      </div>
-    </div>
+      <div v-if="isAdmin" class="role-chip">Vista admin</div>
+      <div v-else class="role-chip role-chip--user">Vista usuario</div>
+    </header>
 
-    <div class="card" style="margin-bottom:16px">
-      <div class="kpi-grid">
-        <div class="kpi">
-          <div class="title">Eventos de escucha</div>
-          <div class="value">{{ store.kpiEventos }}</div>
-          <div class="chip">Mock</div>
-        </div>
-        <div class="kpi">
-          <div class="title">Canciones únicas</div>
-          <div class="value">{{ store.kpiCancionesUnicas }}</div>
-        </div>
-        <div class="kpi">
-          <div class="title">Horas totales</div>
-          <div class="value">{{ store.kpiHoras }} h</div>
-        </div>
-        <div class="kpi">
-          <div class="title">Artistas únicos</div>
-          <div class="value">{{ store.kpiArtistasUnicos }}</div>
-        </div>
-      </div>
-    </div>
 
-    <div class="grid-2">
-      <div class="card">
+    <!-- KPIs -->
+    <section class="kpis">
+      <div class="kpi-card">
+        <div class="kpi-label">Reproducciones totales</div>
+        <div class="kpi-value">{{ totalPlays }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Álbumes con escuchas</div>
+        <div class="kpi-value">{{ totalAlbumsConEscuchas }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Top 5 álbumes</div>
+        <div class="kpi-value">{{ topAlbums.length }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Top 5 artistas</div>
+        <div class="kpi-value">{{ topArtists.length }}</div>
+      </div>
+    </section>
+
+
+    <section class="grid">
+      <!-- Top 5 álbumes -->
+      <article class="panel">
         <div class="panel-header">
-          <h3>Tendencia de Reproducciones</h3>
-          <span class="chip">Demo</span>
+          <h2>Top 5 álbumes</h2>
+          <span class="panel-sub">Ordenados por escuchas totales</span>
         </div>
 
-        <div class="panel-subheader">
-          <label class="agg">
-            <span>Agregación:</span>
-            <select v-model="agg">
-              <option value="daily">Diaria</option>
-              <option value="monthly">Mensual</option>
-            </select>
-          </label>
-        </div>
 
-        <div class="chart-wrap">
-          <ChartCard type="bar" :data="barData" :options="barOptions" />
-        </div>
-
-        <div class="table-scroll" style="margin-top:10px">
-          <table class="trend">
-            <thead>
-              <tr><th>Día</th><th class="num">Reproducciones</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="([day,count]) in tendenciaLista" :key="day">
-                <td>{{ day }}</td>
-                <td class="num">{{ count }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="panel-header">
-          <h3>Distribución por Canción</h3>
-          <span class="chip">Demo</span>
-        </div>
-
-        <ul class="legend">
-          <li v-for="row in distRows" :key="row.trackId">
-            <span class="dot"></span>
-            <span class="name">{{ row.name }}</span>
-            <div class="bar">
-              <div class="fill" :style="{ width: ((row.count / distMax) * 100) + '%' }"></div>
+        <ul class="list">
+          <li
+            v-for="(album, index) in topAlbums"
+            :key="album.id"
+            class="list-item"
+            :class="{ highlighted: highlights.isAlbumHighlighted(album.id) }"
+          >
+            <div class="rank">#{{ index + 1 }}</div>
+            <div class="item-main">
+              <div class="item-title">
+                {{ album.artist }} — {{ album.album }}
+              </div>
+              <div class="item-meta">
+                Año {{ album.year }} · {{ album.total_listens }} escuchas
+              </div>
             </div>
-            <span class="count">{{ row.count }}</span>
+
+
+            <button
+              v-if="isAdmin"
+              class="badge-btn"
+              @click="toggleAlbumHighlight(album.id)"
+            >
+              <span v-if="highlights.isAlbumHighlighted(album.id)">★ Quitar</span>
+              <span v-else>☆ Recomendar</span>
+            </button>
+
+
+            <span
+              v-else-if="highlights.isAlbumHighlighted(album.id)"
+              class="pill pill--recommended"
+            >
+              Recomendado
+            </span>
           </li>
-          <li v-if="!distRows.length" class="empty">Sin datos en el rango actual.</li>
         </ul>
-      </div>
-    </div>
+      </article>
+
+
+      <!-- Top 5 artistas -->
+      <article class="panel">
+        <div class="panel-header">
+          <h2>Top 5 artistas</h2>
+          <span class="panel-sub">Sumando escuchas de todos sus álbumes</span>
+        </div>
+
+
+        <ul class="list">
+          <li
+            v-for="(artist, index) in topArtists"
+            :key="artist.name"
+            class="list-item"
+            :class="{ highlighted: highlights.isArtistHighlighted(artist.name) }"
+          >
+            <div class="rank">#{{ index + 1 }}</div>
+            <div class="item-main">
+              <div class="item-title">{{ artist.name }}</div>
+              <div class="item-meta">
+                {{ artist.total_listens }} escuchas totales
+              </div>
+            </div>
+
+
+            <button
+              v-if="isAdmin"
+              class="badge-btn"
+              @click="toggleArtistHighlight(artist.name)"
+            >
+              <span v-if="highlights.isArtistHighlighted(artist.name)">★ Quitar</span>
+              <span v-else>☆ Recomendar</span>
+            </button>
+
+
+            <span
+              v-else-if="highlights.isArtistHighlighted(artist.name)"
+              class="pill pill--recommended"
+            >
+              Recomendado
+            </span>
+          </li>
+        </ul>
+      </article>
+    </section>
+
+
+    <section class="note">
+      <p>
+        Tus estadísticas personales estan en la vista <strong>/estadisticas</strong>.
+      </p>
+    </section>
   </div>
 </template>
 
+
 <style scoped>
-.container { background:#0b0f15; }
-
-.toolbar { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:14px }
-.subtitle { opacity:.8; margin:.25rem 0 0 }
-.toolbar-actions { display:flex; gap:.6rem; align-items:center }
-.range-btn {
-  background:#162030; border:1px solid #253040; border-radius:8px;
-  color:#dce3ea; font-size:.8rem; padding:.35rem .7rem; cursor:pointer; transition:.2s;
+.dashboard {
+  padding: 20px;
+  color: #e5ecff;
 }
-.range-btn:hover{ background:#1f2c40 }
 
-.kpi-grid{ display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px }
-.kpi{ background:#0f141b; border:1px solid #202632; border-radius:12px; padding:12px; position:relative }
-.kpi .title{ opacity:.85; font-size:.9rem; margin-bottom:.25rem }
-.kpi .value{ font-weight:800; font-size:1.5rem }
-.kpi .chip{ position:absolute; right:10px; bottom:10px; background:#15202b; border:1px solid #254050; color:#cfeadb; border-radius:999px; padding:.15rem .5rem; font-size:.72rem }
 
-.grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
-@media (max-width: 980px){ .grid-2{ grid-template-columns: 1fr } }
-
-.card{ background:#0f141b; border:1px solid #202632; border-radius:12px; padding:12px }
-.panel-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px }
-.panel-subheader{ display:flex; justify-content:flex-end; margin-bottom:8px }
-.agg{ display:flex; gap:.4rem; align-items:center }
-.agg select{ background:#0b0f15; border:1px solid #2a3240; color:#cfd8e3; padding:.3rem .5rem; border-radius:8px }
-
-.chart-wrap{ height:240px; border:1px solid var(--border); border-radius:12px; overflow:hidden }
-.chart-wrap :deep(canvas){ width:100% !important; height:100% !important; display:block }
-.table-scroll{ max-height:240px; overflow:auto; border:1px solid var(--border); border-radius:12px }
-.trend{ width:100%; border-collapse:collapse; font-size:.95rem }
-.trend thead th{
-  position:sticky; top:0; background:#0c1526; color:#cdd6e3; padding:8px 12px; text-align:left; border-bottom:1px solid var(--border)
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 16px;
 }
-.trend td{ padding:8px 12px; border-bottom:1px solid #0f172a }
-.trend tbody tr:nth-child(odd) td{ background:#0f172a }
-.trend tbody tr:nth-child(even) td{ background:#0c1426 }
-.trend .num{ text-align:right; width:140px }
+.subtitle {
+  opacity: 0.8;
+  margin-top: 4px;
+  font-size: 0.9rem;
+}
 
-.legend{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px }
-.legend li{ display:grid; grid-template-columns: 12px 1fr 1.2fr 60px; align-items:center; gap:8px }
-.legend .dot{ width:10px; height:10px; border-radius:50%; background:linear-gradient(180deg, var(--accent), var(--accent-2)) }
-.legend .name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-.legend .bar{ height:12px; background:#15202b; border:1px solid #244; border-radius:999px; overflow:hidden }
-.legend .fill{ height:100%; background:linear-gradient(90deg, #26d36e, #3dfc7a) }
-.legend .count{ text-align:right; opacity:.9 }
-.legend .empty{ opacity:.7; grid-column: 1 / -1; padding:.4rem 0 }
+
+.role-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #4f46e5;
+  font-size: 0.8rem;
+}
+.role-chip--user {
+  border-color: #38bdf8;
+}
+
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.kpi-card {
+  background: #020617;
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+.kpi-label {
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+.kpi-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.panel {
+  background: #020617;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 14px;
+}
+.panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.panel-sub {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.list-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+}
+.list-item:last-child {
+  border-bottom: none;
+}
+.list-item.highlighted {
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.08), transparent);
+}
+
+
+.rank {
+  font-weight: 700;
+  width: 26px;
+  text-align: center;
+  opacity: 0.9;
+}
+.item-main {
+  min-width: 0;
+}
+.item-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-meta {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+
+.badge-btn {
+  border-radius: 999px;
+  border: 1px solid rgba(250, 204, 21, 0.7);
+  background: transparent;
+  color: #facc15;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.badge-btn:hover {
+  background: rgba(250, 204, 21, 0.12);
+}
+
+
+.pill {
+  border-radius: 999px;
+  font-size: 0.78rem;
+  padding: 3px 8px;
+}
+.pill--recommended {
+  background: rgba(250, 204, 21, 0.12);
+  color: #facc15;
+  border: 1px solid rgba(250, 204, 21, 0.7);
+}
+
+
+.note {
+  margin-top: 18px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
 </style>
