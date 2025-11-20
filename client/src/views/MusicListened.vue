@@ -40,7 +40,7 @@ const isStatsLoading = computed(() => isLoading.value)
 
 onMounted(async () => {
   if (!musicStore.albums.length) {
-    await musicStore.fetchAlbums('', 'artist')
+    await musicStore.getAlbums()
   }
   if (!musicStore.albumListens.length) {
     await musicStore.fetchAlbumListens()

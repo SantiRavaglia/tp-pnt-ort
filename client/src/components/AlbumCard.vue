@@ -72,6 +72,7 @@ async function addTimesListened() {
       <p>
         <strong>Escuchado:</strong> {{ listens?.times_listened ?? 0 }}
       </p>
+      <router-link :to="`/album/${album.id}`">Ver canciones</router-link>
     </div>
 
   </div>

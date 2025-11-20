@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { useMusicStore } from '../stores/musicStore'
 import AlbumCard from './AlbumCard.vue'
+import SongCard from './SongCard.vue'
 
 const musicStore = useMusicStore()
 const { 
@@ -9,11 +10,8 @@ const {
   isLoading, 
   error, 
   searchQuery, 
-  searchType, 
-  albumListens,
   searchEntity
 } = storeToRefs(musicStore)
-
 </script>
 
 <template>
@@ -22,12 +20,9 @@ const {
 
     <div v-if="isLoading" class="status-message loading">
       Cargando resultados para '{{ searchQuery }}' 
-      <span v-if="searchEntity === 'albums'">
-        por {{ searchType }}...
-      </span>
-      <span v-else>
-        en géneros...
-      </span>
+      <span v-if="searchEntity === 'albums'"> en albumes...</span>
+      <span v-else-if="searchEntity === 'genres'"> en géneros...</span>
+      <span v-else> en canciones...</span>
     </div>
 
     <div v-else-if="error" class="status-message error">
@@ -38,9 +33,13 @@ const {
       <p class="summary-text">
         Se encontraron 
         <strong>{{ searchResults.length }}</strong>
-        {{ searchEntity === 'albums' ? 'discos' : 'géneros' }}.
+        {{
+          searchEntity === 'albums' ? 'discos' :
+          searchEntity === 'genres' ? 'géneros' :
+          'canciones'
+        }}.
       </p>
-      
+
       <div v-if="searchEntity === 'albums'" class="cards-grid">
         <AlbumCard 
           v-for="album in searchResults" 
@@ -49,7 +48,7 @@ const {
         />
       </div>
 
-      <ul v-else class="genres-list">
+      <ul v-else-if="searchEntity === 'genres'" class="genres-list">
         <li 
           v-for="genre in searchResults"
           :key="genre.id"
@@ -58,24 +57,44 @@ const {
           {{ genre.name }}
         </li>
       </ul>
+
+      <div v-else class="cards-grid">
+        <SongCard 
+          v-for="song in searchResults"
+          :key="song.id"
+          :song="song"
+        />
+      </div>
+
     </div>
-    
+
     <div v-else-if="searchQuery" class="status-message no-results">
       No se encontraron resultados para 
       <strong>'{{ searchQuery }}'</strong>
-      en la búsqueda por 
+      en 
       <strong>
-        {{ searchEntity === 'albums' ? searchType : 'género' }}
+        {{
+          searchEntity === 'albums' ? 'albumes' :
+          searchEntity === 'genres' ? 'género' :
+          'canción'
+        }}
       </strong>.
     </div>
-    
+
     <div v-else class="status-message initial">
       Utiliza el formulario superior para buscar 
-      {{ searchEntity === 'albums' ? 'discos musicales' : 'géneros musicales' }}.
+      {{
+        searchEntity === 'albums'
+          ? 'discos musicales'
+          : searchEntity === 'genres'
+            ? 'géneros musicales'
+            : 'canciones'
+      }}.
     </div>
 
   </div>
 </template>
+
 
 <style scoped>
 .results-container {

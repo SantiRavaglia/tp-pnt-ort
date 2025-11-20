@@ -25,6 +25,7 @@ const router = Router();
 router.get("/", async (req, res) => {
   try {
     const listens = await readJson(GENRE_LISTENS_FILE);
+    console.log(listens);
     res.json(listens);
   } catch (error) {
     console.error("Error al leer album-listens:", error);

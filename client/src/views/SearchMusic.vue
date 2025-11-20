@@ -3,13 +3,15 @@ import { onMounted } from 'vue'
 import SearchForm from '../components/SearchForm.vue'
 import ResultsList from '../components/ResultsList.vue'
 import { useMusicStore } from '../stores/musicStore'
+import { storeToRefs } from 'pinia'
 
 const musicStore = useMusicStore()
+const { getAlbums } = storeToRefs(musicStore)
 
 onMounted(async () => {
   if (!musicStore.genres.length) {
     await musicStore.fetchGenres();
-    await musicStore.fetchAlbums("", "artist");
+    await getAlbums.value;
   }
 })
 </script>

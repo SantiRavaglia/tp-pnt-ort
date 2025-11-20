@@ -7,6 +7,8 @@ import albumListensRouter from "./routes/albumListens.routes.js";
 import genresRouter from "./routes/genres.routes.js";
 import genreListensRouter from "./routes/genreListens.routes.js";
 import { initStorage } from "./storage.js";
+import songsRouter from './routes/songs.routes.js'
+import songListensRouter from './routes/songListens.routes.js'
 
 const app = express();
 
@@ -19,7 +21,9 @@ await initStorage();
 app.use("/albums", albumsRouter);
 app.use("/album-listens", albumListensRouter);
 app.use("/genres", genresRouter);
-app.use("/genres-listens", genreListensRouter);
+app.use("/genre-listens", genreListensRouter);
+app.use('/songs', songsRouter)
+app.use('/song-listens', songListensRouter)
 
 app.get("/", (req, res) => {
   res.json({ message: "API de música usando filesystem 🎧" });

@@ -15,6 +15,7 @@ const { isAdmin } = storeToRefs(authStore)
 const {
   topAlbums,
   topArtists,
+  getAlbums,
   albumsWithListens,
   totalPlays,
   albumsWithListensCount,
@@ -24,9 +25,7 @@ const {
 
 onMounted(async () => {
   // Álbumes + escuchas
-  if (!musicStore.albums.length) {
-    await musicStore.fetchAlbums('', 'artist')
-  }
+  await getAlbums.value;
   if (!musicStore.albumListens.length) {
     await musicStore.fetchAlbumListens()
   }

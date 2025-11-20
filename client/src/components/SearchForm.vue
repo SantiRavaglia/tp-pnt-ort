@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useMusicStore } from '../stores/musicStore'
 
 const musicStore = useMusicStore()
@@ -11,59 +11,58 @@ const searchEntity = computed({
 })
 
 const isAlbumMode = computed(() => searchEntity.value === 'albums')
+const isGenreMode = computed(() => searchEntity.value === 'genres')
+const isSongMode  = computed(() => searchEntity.value === 'songs')
 
 musicStore.fetchAlbumListens()
+
+watch(searchEntity, () => {
+  localQuery.value = ''
+  musicStore.searchResults = []
+  musicStore.error = null
+})
 
 const handleSubmit = async () => {
   if (localQuery.value.trim() === '') return
   
   if (searchEntity.value === 'albums') {
-    await musicStore.fetchAlbums(localQuery.value, musicStore.searchType)
-  } else {
+    await musicStore.searchAlbums(localQuery.value)
+  } 
+  else if (searchEntity.value === 'genres') {
     await musicStore.searchGenres(localQuery.value)
   }
-}
-
-const updateSearchType = (type) => {
-  musicStore.setSearchType(type)
+  else {
+    await musicStore.searchSongs(localQuery.value)
+  }
 }
 </script>
 
 <template>
-  <!-- acá uso la clase que definiste en el CSS -->
   <form @submit.prevent="handleSubmit" class="search-form">
 
-    <!-- Radios: Álbumes / Géneros -->
     <div class="search-entity-group">
       <label>
-        <input
-          type="radio"
-          value="albums"
-          v-model="searchEntity"
-          name="search-entity"
-        />
-        Álbumes
+        <input type="radio" value="albums" v-model="searchEntity" /> Álbumes
       </label>
-
       <label>
-        <input
-          type="radio"
-          value="genres"
-          v-model="searchEntity"
-          name="search-entity"
-        />
-        Géneros
+        <input type="radio" value="genres" v-model="searchEntity" /> Géneros
+      </label>
+      <label>
+        <input type="radio" value="songs" v-model="searchEntity" /> Canciones
       </label>
     </div>
 
-    <!-- Input + botón, envueltos en .search-input-group -->
     <div class="search-input-group">
       <input 
         type="text" 
         v-model="localQuery" 
-        :placeholder="isAlbumMode 
-          ? 'Buscar por Artista, Álbum o Año...' 
-          : 'Buscar por nombre de género...'"
+        :placeholder="
+          isAlbumMode ? 
+            'Buscar por Artista, Álbum o Año...' :
+          isGenreMode ?
+            'Buscar por nombre de género...' :
+            'Buscar por nombre de canción...'
+        "
         required
       />
 
@@ -71,39 +70,6 @@ const updateSearchType = (type) => {
         <span v-if="musicStore.isLoading">Buscando...</span>
         <span v-else>🔍 Buscar</span>
       </button>
-    </div>
-
-    <!-- Radios de tipo de búsqueda -->
-    <div v-if="isAlbumMode" class="search-type-group">
-      <label>
-        <input 
-          type="radio" 
-          :checked="musicStore.searchType === 'artist'" 
-          @change="updateSearchType('artist')"
-          name="search-type"
-        />
-        Artista
-      </label>
-
-      <label>
-        <input 
-          type="radio" 
-          :checked="musicStore.searchType === 'album'" 
-          @change="updateSearchType('album')"
-          name="search-type"
-        />
-        Nombre
-      </label>
-
-      <label>
-        <input 
-          type="radio" 
-          :checked="musicStore.searchType === 'year'" 
-          @change="updateSearchType('year')"
-          name="search-type"
-        />
-        Año
-      </label>
     </div>
 
   </form>

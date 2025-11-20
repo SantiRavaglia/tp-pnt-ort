@@ -4,54 +4,45 @@ export const useMusicStore = defineStore('music', {
   state: () => ({
     searchResults: [],
     searchQuery: '',
-    searchType: 'artist',
     searchEntity: 'albums',
     isLoading: false,
     error: null,
     albumListens: [],
     albums: [],
-    genres: [],        
-    genreListens: []
+    genres: [],
+    genreListens: [],
+    songs: [],
+    songListens: []
   }),
   
   actions: {
-    setSearchType(type) {
-      this.searchType = type
-    },
 
     setSearchEntity(entity) {  
-      this.searchEntity = entity
+      this.searchEntity = entity;
+      this.searchResults = []
+      this.searchQuery = ''
+      this.error = null
+      this.isLoading = false
     },
 
-    async fetchAlbums(query, type) {
-      this.isLoading = true
-      this.error = null
-      this.searchQuery = query
-      this.searchType = type
-      this.searchEntity = 'albums'
-      try {
-        const res = await fetch('http://localhost:3000/albums');
-        if (!res.ok) {
-          throw new Error('Error en la respuesta de la API');
-        }
-        const results = await res.json();
-        this.albums = results;
 
-        const queryLower = query.toLowerCase();
-
-        this.searchResults = results.filter(disco => {
-          if (type === 'artist') return disco.artist.toLowerCase().includes(queryLower);
-          if (type === 'album') return disco.album.toLowerCase().includes(queryLower);
-          if (type === 'year') return disco.year.toString().includes(queryLower);
-          return false;
-        });
-        
-      } catch (err) {
-        this.error = "Error al buscar música. Intente de nuevo.";
-        this.searchResults = [];
-      } finally {
-        this.isLoading = false
+    async fetchAlbums() {
+      const res = await fetch('http://localhost:3000/albums');
+      if (!res.ok) {
+        throw new Error('Error en la respuesta de la API');
       }
+      const results = await res.json();
+      this.albums = results;
+    },
+
+    async searchAlbums(query) {
+      const queryLower = query.toLowerCase();
+      this.searchResults = [];
+      this.searchResults = this.albums.filter(disco => {
+        return disco.artist.toLowerCase().includes(queryLower)
+          || disco.album.toLowerCase().includes(queryLower)
+          || disco.year.toString().includes(queryLower);
+      });
     },
 
     async fetchAlbumListens() {
@@ -67,30 +58,31 @@ export const useMusicStore = defineStore('music', {
       }
     },
 
-  async incrementAlbumListen(album_id, user_id) {
-    const i = this.albumListens.findIndex(l => l.album_id === album_id && l.user_id === user_id)
-    if (i !== -1) {
-      this.albumListens[i] = {
-        ...this.albumListens[i],
-        times_listened: (this.albumListens[i].times_listened || 0) + 1
+    async incrementAlbumListen(album_id, user_id) {
+      const i = this.albumListens.findIndex(l => l.album_id === album_id && l.user_id === user_id)
+      if (i !== -1) {
+        this.albumListens[i] = {
+          ...this.albumListens[i],
+          times_listened: (this.albumListens[i].times_listened || 0) + 1
+        }
+      } else {
+        this.albumListens.push({ album_id, user_id: user_id, times_listened: 1 })
       }
-    } else {
-      this.albumListens.push({ album_id, user_id: user_id, times_listened: 1 })
-    }
 
-    try {
-      await fetch('http://localhost:3000/album-listens', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ album_id: album_id, user_id: user_id })
-      })
-    } catch (e) {
-      console.error('No se pudo registrar la escucha', e)
-      await this.fetchAlbumListens()
-    }
-  },
+      try {
+        await fetch('http://localhost:3000/album-listens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ album_id: album_id, user_id: user_id })
+        })
+      } catch (e) {
+        console.error('No se pudo registrar la escucha', e)
+        await this.fetchAlbumListens()
+      }
+    },
 
-  async fetchGenres() {
+
+    async fetchGenres() {
       try {
         const res = await fetch('http://localhost:3000/genres')
         if (!res.ok) throw new Error('Error en la respuesta de la API')
@@ -103,8 +95,10 @@ export const useMusicStore = defineStore('music', {
 
     async fetchGenreListens() {
       try {
-        const res = await fetch('http://localhost:3000/genre-listens')
-        if (!res.ok) throw new Error('Error en la respuesta de la API')
+        const res = await fetch('http://localhost:3000/genre-listens');
+        if (!res.ok) {
+          throw new Error('Error en la respuesta de la API');
+        }
         this.genreListens = await res.json()
       } catch (err) {
         console.error('Error al obtener genre listens:', err)
@@ -166,6 +160,62 @@ export const useMusicStore = defineStore('music', {
       } finally {
         this.isLoading = false
       }
+    },
+
+
+    async fetchSongs() {
+      try {
+        const res = await fetch('http://localhost:3000/songs')
+        if (!res.ok) throw new Error('Error en la respuesta de la API')
+        this.songs = await res.json()
+      } catch (err) {
+        console.error('Error al obtener canciones:', err)
+        this.songs = []
+      }
+    },
+
+    async fetchSongListens() {
+      try {
+        const res = await fetch('http://localhost:3000/song-listens')
+        if (!res.ok) throw new Error('Error en la respuesta de la API')
+        this.songListens = await res.json()
+      } catch (err) {
+        console.error('Error al obtener song listens:', err)
+        this.songListens = []
+      }
+    },
+
+    async incrementSongListen(song_id, user_id) {
+      const i = this.songListens.findIndex(
+        l => l.song_id === song_id && l.user_id === user_id
+      )
+
+      if (i !== -1) {
+        this.songListens[i] = {
+          ...this.songListens[i],
+          times_listened: (this.songListens[i].times_listened || 0) + 1
+        }
+      } else {
+        this.songListens.push({ song_id, user_id, times_listened: 1 })
+      }
+
+      try {
+        await fetch('http://localhost:3000/song-listens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ song_id, user_id })
+        })
+      } catch (e) {
+        console.error('No se pudo registrar la escucha de canción', e)
+        await this.fetchSongListens()
+      }
+    },
+
+    async searchSongs(query) {
+      const q = query.toLowerCase()
+      this.searchResults = this.songs.filter(s =>
+        s.name.toLowerCase().includes(q)
+      )
     }
 
   },
@@ -190,12 +240,10 @@ export const useMusicStore = defineStore('music', {
         .sort((a, b) => b.total_listens - a.total_listens)
     },
 
-     
     genresWithListens(s) {
-      
       if (!s.genres.length || !s.albums.length || !s.albumListens.length) return []
 
-      const totals = new Map() // genreId -> total de escuchas
+      const totals = new Map() 
 
       for (const listen of s.albumListens) {
         if (!listen) continue
@@ -216,62 +264,60 @@ export const useMusicStore = defineStore('music', {
         .sort((a, b) => b.total_listens - a.total_listens)
     },
 
-    
     mostListenedGenre() {
       const list = this.genresWithListens
       return list.length ? list[0] : null
     },
 
     genreTimeByUser: (s) => (userId) => {
-    if (!userId || !s.albums.length || !s.albumListens.length || !s.genres.length) {
-      return []
-    }
+      if (!userId || !s.albums.length || !s.albumListens.length || !s.genres.length) {
+        return []
+      }
 
-    const timePerGenre = new Map() // genreId -> segundos totales
+      const timePerGenre = new Map()
 
-    for (const listen of s.albumListens) {
-      if (!listen) continue
-      if (listen.user_id !== userId) continue
+      for (const listen of s.albumListens) {
+        if (!listen) continue
+        if (listen.user_id !== userId) continue
 
-      const albumId = listen.album_id
-      if (!albumId) continue
+        const albumId = listen.album_id
+        if (!albumId) continue
 
-      const album = s.albums.find(a => a.id === albumId)
-      if (!album) continue
+        const album = s.albums.find(a => a.id === albumId)
+        if (!album) continue
 
-      const genreId = album.genre_id
-      if (!genreId) continue
+        const genreId = album.genre_id
+        if (!genreId) continue
 
-      const durationSeconds = album.duration_s || 0
-      const times = listen.times_listened || 0
-      const totalSeconds = durationSeconds * times
+        const durationSeconds = album.duration_s || 0
+        const times = listen.times_listened || 0
+        const totalSeconds = durationSeconds * times
 
-      const prev = timePerGenre.get(genreId) || 0
-      timePerGenre.set(genreId, prev + totalSeconds)
-    }
+        const prev = timePerGenre.get(genreId) || 0
+        timePerGenre.set(genreId, prev + totalSeconds)
+      }
 
-    return s.genres
-      .map(g => ({
-        ...g,
-        total_seconds: timePerGenre.get(g.id) || 0
-      }))
-      .filter(g => g.total_seconds > 0)
-      .sort((a, b) => b.total_seconds - a.total_seconds)
-  },
+      return s.genres
+        .map(g => ({
+          ...g,
+          total_seconds: timePerGenre.get(g.id) || 0
+        }))
+        .filter(g => g.total_seconds > 0)
+        .sort((a, b) => b.total_seconds - a.total_seconds)
+    },
 
-  getAlbums() {
-    if (!this.albums.length) {
-      this.fetchAlbums('', 'artist');
-    } 
-    return this.albums;
-  },
+    getAlbums() {
+      if (!this.albums.length) {
+        this.fetchAlbums();
+      } 
+      return this.albums;
+    },
 
-  topAlbums() {
+    topAlbums() {
       return this.albumsWithListens.slice(0, 5)
     },
 
-
-  topArtists() {
+    topArtists() {
       const totals = new Map()
 
       for (const album of this.albumsWithListens) {
@@ -285,22 +331,39 @@ export const useMusicStore = defineStore('music', {
         .slice(0, 5)
     },
 
-  totalPlays() {
-    return this.albumsWithListens
-      .reduce((acc, a) => acc + a.total_listens, 0)
-  },
+    totalPlays() {
+      return this.albumsWithListens
+        .reduce((acc, a) => acc + a.total_listens, 0)
+    },
 
-  
-  albumsWithListensCount() {
-    return this.albumsWithListens.length
-  },
+    albumsWithListensCount() {
+      return this.albumsWithListens.length
+    },
 
-  mostListenedArtist() {
-    const artists = this.topArtists
-    if (!artists.length) return null
-    return artists[0]       // { name, total_listens }
-  },
+    mostListenedArtist() {
+      const artists = this.topArtists
+      if (!artists.length) return null
+      return artists[0]
+    },
 
-    
+
+    songsWithListens(s) {
+      const totals = new Map()
+
+      for (const l of s.songListens) {
+        if (!l || !l.song_id) continue
+        const prev = totals.get(l.song_id) || 0
+        totals.set(l.song_id, prev + (l.times_listened || 0))
+      }
+
+      return s.songs
+        .map(song => ({
+          ...song,
+          total_listens: totals.get(song.id) || 0
+        }))
+        .filter(song => song.total_listens > 0)
+        .sort((a, b) => b.total_listens - a.total_listens)
+    }
+
   }
 })

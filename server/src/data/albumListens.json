@@ -263,5 +263,10 @@
     "album_id": 4,
     "user_id": 5,
     "times_listened": 1
+  },
+  {
+    "album_id": 1,
+    "user_id": 4,
+    "times_listened": 49
   }
 ]
