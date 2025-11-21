@@ -28,7 +28,11 @@ export const router = createRouter({
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
     { path: '/estadisticas/musica-escuchada', name: 'MusicListened', component: MusicListenedView }
-  ]
+  ],
+
+  scrollBehavior() {
+    return { top: 0 }
+  }
 })
 
 router.beforeEach((to) => {
