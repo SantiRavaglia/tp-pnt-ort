@@ -1,77 +1,73 @@
 <script setup>
 import { computed } from 'vue'
-import { useAuthStore } from '../stores/auth.js'
 import { useMusicStore } from '../stores/musicStore'
 import { storeToRefs } from 'pinia'
 
 const props = defineProps({
   song: {
     type: Object,
-    required: true,
-    default: () => ({
-      id: 0,
-      album_id: null,
-      name: 'Canción desconocida',
-      duration_s: 0,
-      track_number: null
-    })
+    required: true
   }
 })
-
-const authStore = useAuthStore()
-const { user, isAuthenticated } = storeToRefs(authStore)
 
 const musicStore = useMusicStore()
 const { albums } = storeToRefs(musicStore)
 
+// Nombre del álbum
 const albumName = computed(() => {
   if (!albums.value?.length) return 'Álbum desconocido'
-  const a = albums.value.find(a => a.id === props.song.album_id)
+
+  const albumId = props.song.album_id ?? props.song.albumId
+  const a = albums.value.find(a => a.id === albumId)
+
   return a ? a.album : 'Álbum desconocido'
 })
 
-const listens = computed(() => {
-  if (!user.value) return null
-  const match = musicStore.songListens.find(
-    l => l.song_id === props.song.id && l.user_id === user.value.id
+// Nombre de la canción (probamos varias claves)
+const songTitle = computed(() => {
+  return (
+    props.song.name ??
+    props.song.title ??
+    props.song.song_name ??
+    'Canción desconocida'
   )
-  return match || null
 })
 
+// Duración formateada
 const formattedDuration = computed(() => {
-  const total = props.song.duration_s || 0
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${String(s).padStart(2, '0')}`
-})
+  const durSeconds = props.song.duration_s ?? props.song.durationSeconds
 
-async function addTimesListened() {
-  if (!isAuthenticated.value || !user.value) return
-  await musicStore.incrementSongListen(props.song.id, user.value.id)
-}
+  // Si viene en segundos → mm:ss
+  if (typeof durSeconds === 'number' && durSeconds > 0) {
+    const m = Math.floor(durSeconds / 60)
+    const s = durSeconds % 60
+    return `${m}:${String(s).padStart(2, '0')}`
+  }
+
+  // Si viene como string (ej. "4:47") la mostramos directo
+  if (typeof props.song.duration === 'string' && props.song.duration.trim() !== '') {
+    return props.song.duration
+  }
+
+  return '—'
+})
 </script>
 
 <template>
   <div class="card">
     <div class="card-header">
-      <h3>{{ song.name }}</h3>
-      <button class="add-btn" @click="addTimesListened">
-        +
-      </button>
+      <h3>{{ songTitle }}</h3>
     </div>
 
     <div class="details">
       <p>
         <strong>Álbum:</strong> {{ albumName }}
       </p>
-      <p v-if="song.track_number != null">
-        <strong>Pista:</strong> #{{ song.track_number }}
+      <p v-if="song.track_number != null || song.trackNumber != null">
+        <strong>Pista:</strong> #{{ song.track_number ?? song.trackNumber }}
       </p>
       <p>
         <strong>Duración:</strong> {{ formattedDuration }}
-      </p>
-      <p>
-        <strong>Veces escuchadas:</strong> {{ listens?.times_listened ?? 0 }}
       </p>
     </div>
   </div>
@@ -98,21 +94,6 @@ h3 {
   color: #e4d9d9;
   margin: 0;
   font-size: 1.05rem;
-}
-
-.add-btn {
-  background: #ffffff22;
-  color: #fff;
-  border: 1px solid #ffffff55;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: 0.15s ease;
-}
-
-.add-btn:hover {
-  background: #ffffff44;
 }
 
 .details p {

@@ -58,6 +58,17 @@ export const useMusicStore = defineStore('music', {
       }
     },
 
+     async fetchSongs() {
+      try {
+        const res = await fetch('http://localhost:3000/songs')
+        if (!res.ok) throw new Error('Error en la respuesta de la API')
+        this.songs = await res.json()
+      } catch (err) {
+        console.error('Error al obtener canciones:', err)
+        this.songs = []
+      }
+    },
+
     async incrementAlbumListen(album_id, user_id) {
       const i = this.albumListens.findIndex(l => l.album_id === album_id && l.user_id === user_id)
       if (i !== -1) {
@@ -227,6 +238,28 @@ export const useMusicStore = defineStore('music', {
       const totals = new Map()
       for (const l of s.albumListens) {
         if (!l || !l.album_id) continue
+        const prev = totals.get(l.album_id) || 0
+        totals.set(l.album_id, prev + (l.times_listened || 0))
+      }
+
+      return s.albums
+        .map(a => ({
+          ...a,
+          total_listens: totals.get(a.id) || 0
+        }))
+        .filter(a => a.total_listens > 0)
+        .sort((a, b) => b.total_listens - a.total_listens)
+    },
+
+    albumsWithListensByUser: (s) => (userId) => {
+      if (!userId) return []
+
+      const totals = new Map()
+
+      for (const l of s.albumListens) {
+        if (!l || !l.album_id) continue
+        if (l.user_id !== userId) continue  
+
         const prev = totals.get(l.album_id) || 0
         totals.set(l.album_id, prev + (l.times_listened || 0))
       }

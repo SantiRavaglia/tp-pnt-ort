@@ -7,7 +7,8 @@ import { useAuthStore } from '../stores/auth'
 const musicStore = useMusicStore()
 const authStore = useAuthStore()
 
-const { albumsWithListens, isLoading } = storeToRefs(musicStore)
+// solo saco isLoading del store como ref
+const { isLoading } = storeToRefs(musicStore)
 const { user } = storeToRefs(authStore)
 
 const mode = ref('albums')
@@ -31,6 +32,13 @@ function formatDuration(seconds) {
   return `${seconds} segundo(s)`
 }
 
+// ⬇️ Álbumes por usuario logueado
+const albumStats = computed(() => {
+  if (!user.value) return []
+  return musicStore.albumsWithListensByUser(user.value.id)
+})
+
+// ⬇️ Géneros por usuario logueado 
 const genreStats = computed(() => {
   if (!user.value) return []
   return musicStore.genreTimeByUser(user.value.id)
@@ -40,7 +48,7 @@ const isStatsLoading = computed(() => isLoading.value)
 
 onMounted(async () => {
   if (!musicStore.albums.length) {
-    await musicStore.getAlbums()
+    await musicStore.getAlbums
   }
   if (!musicStore.albumListens.length) {
     await musicStore.fetchAlbumListens()
@@ -72,31 +80,41 @@ onMounted(async () => {
 
     <p v-if="isStatsLoading">Cargando datos...</p>
 
+    <!-- TAB ÁLBUMES -->
     <template v-else-if="mode === 'albums'">
-      <p v-if="albumsWithListens.length === 0">
-        Todavía no hay álbumes con escuchas registradas.
-      </p>
+      <template v-if="!user">
+        <p>Debés estar logueado para ver estadísticas por álbum.</p>
+      </template>
 
-      <ul v-else class="items-list">
-        <li
-          v-for="album in albumsWithListens"
-          :key="album.id"
-          class="item"
-        >
-          <div class="item-main">
-            <span class="item-title">
-              {{ album.artist }} — {{ album.album }}
-            </span>
-            <span class="item-year">({{ album.year }})</span>
-          </div>
-          <div class="item-metrics">
-            Tiempo escuchado:
-            <strong>{{ formatDuration(album.total_listens * album.duration_s) }}</strong>
-          </div>
-        </li>
-      </ul>
+      <template v-else>
+        <p v-if="albumStats.length === 0">
+          Todavía no hay álbumes con escuchas registradas para tu usuario.
+        </p>
+
+        <ul v-else class="items-list">
+          <li
+            v-for="album in albumStats"
+            :key="album.id"
+            class="item"
+          >
+            <div class="item-main">
+              <span class="item-title">
+                {{ album.artist }} — {{ album.album }}
+              </span>
+              <span class="item-year">({{ album.year }})</span>
+            </div>
+            <div class="item-metrics">
+              Tiempo escuchado:
+              <strong>
+                {{ formatDuration(album.total_listens * album.duration_s) }}
+              </strong>
+            </div>
+          </li>
+        </ul>
+      </template>
     </template>
 
+    <!-- TAB GÉNEROS -->
     <template v-else>
       <p v-if="!user">
         Debés estar logueado para ver estadísticas por género.
@@ -161,7 +179,7 @@ onMounted(async () => {
 
 .item {
   padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
 }

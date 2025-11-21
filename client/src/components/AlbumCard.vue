@@ -72,7 +72,7 @@ async function addTimesListened() {
       <p>
         <strong>Escuchado:</strong> {{ listens?.times_listened ?? 0 }}
       </p>
-      <router-link :to="`/album/${album.id}`">Ver canciones</router-link>
+      <router-link :to="`/album/${album.id}`" class="view-songs-btn"> Ver canciones </router-link>
     </div>
 
   </div>
@@ -85,6 +85,23 @@ async function addTimesListened() {
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
+.view-songs-btn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: #1e40af; /* azul más brillante */
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.view-songs-btn:hover {
+  background: #3b82f6; /* un celeste más moderno */
+  transform: translateY(-1px);
+}
+
 
 .card-header {
   display: flex;
