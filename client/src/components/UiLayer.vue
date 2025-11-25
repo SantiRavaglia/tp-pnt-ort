@@ -1,5 +1,4 @@
 <template>
-  <!-- Toasts -->
   <div class="toasts">
     <div v-for="t in ui.toasts" :key="t.id" class="toast" :class="t.type">
       <span class="dot"></span>
@@ -8,7 +7,6 @@
     </div>
   </div>
 
-  <!-- Modal confirm -->
   <div v-if="ui.confirm.open" class="modal-backdrop" @click.self="ui.confirmNo()">
     <div class="modal">
       <h3>{{ ui.confirm.title }}</h3>

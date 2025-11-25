@@ -1,11 +1,11 @@
 :root{
-  --bg-1: #0b1420;     /* fondo oscuro principal */
-  --bg-2: #0f172a;     /* cards oscuras */
-  --ink: #e5e7eb;      /* texto */
-  --muted: #9ca3af;    /* texto secundario */
-  --accent: #22c55e;   /* verde principal */
-  --accent-2: #8bff6b; /* verde claro */
-  --border: #223049;   /* bordes suaves */
+  --bg-1: #0b1420;    
+  --bg-2: #0f172a;    
+  --ink: #e5e7eb;     
+  --muted: #9ca3af;   
+  --accent: #22c55e;  
+  --accent-2: #8bff6b;
+  --border: #223049;  
 }
 
 html,body,#app{height:100%}
@@ -44,7 +44,6 @@ body{ margin:0; background: radial-gradient(1200px 600px at 70% 10%, #42f58d33, 
   padding:16px; box-shadow: 0 2px 16px #00000033;
 }
 
-/* KPIs en una sola card grande con 4 columnas */
 .kpi-grid{ display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px }
 .kpi{ background:#0c1526; border:1px solid #1a2438; border-radius:14px; padding:18px; text-align:left}
 .kpi .title{ font-size:.9rem; color:var(--muted) }
@@ -52,7 +51,6 @@ body{ margin:0; background: radial-gradient(1200px 600px at 70% 10%, #42f58d33, 
 
 @media (max-width: 980px){ .layout{ grid-template-columns: 1fr } .sidebar{ position:static; height:auto } .kpi-grid{ grid-template-columns: repeat(2, 1fr) } }
 
-/* Botoncitos/Chips */
 .btn{ padding:8px 12px; border-radius:12px; border:1px solid #1e2b43; background:#0b1324; color:var(--ink); cursor:pointer}
 .btn.active{ border-color:var(--accent); box-shadow:0 0 0 1px #1e3b2a inset}
 .chip{ font-size:.8rem; padding:6px 10px; border-radius:999px; border:1px solid #1f2c45; color:#c0cad6; background:#0c1627}

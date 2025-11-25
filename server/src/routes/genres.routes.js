@@ -1,4 +1,3 @@
-// src/routes/albums.routes.js
 import { Router } from "express";
 import {
   GENRES_FILE,
@@ -8,19 +7,6 @@ import {
 
 const router = Router();
 
-/**
- * FORMATO ESPERADO EN albums.json:
- *
- * [
- *   {
- *     "id": 1,
- *     "name": "Heavy Metal",
- *   },
- *   ...
- * ]
- */
-
-// GET /albums - obtener todos los álbumes
 router.get("/", async (req, res) => {
   try {
     const albums = await readJson(GENRES_FILE);
@@ -31,7 +17,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /albums/:id - obtener álbum por id lógico (numérico)
 router.get("/:id", async (req, res) => {
   try {
     const albums = await readJson(GENRES_FILE);
@@ -50,12 +35,10 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST /albums - crear un álbum nuevo
 router.post("/", async (req, res) => {
   try {
     const { id, artist, album, year, duration_s } = req.body;
 
-    // Validamos exactamente los campos de tu formato
     if (
       id === undefined ||
       !artist ||
@@ -88,7 +71,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PATCH /albums/:id - actualizar parcialmente un álbum
 router.patch("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -101,14 +83,11 @@ router.patch("/:id", async (req, res) => {
       return res.status(404).json({ error: "Álbum no encontrado" });
     }
 
-    // No permitimos cambiar el id por simplicidad
     const { id: _ignore, ...restUpdates } = updates;
 
-    // Solo mezclamos campos conocidos del formato
     const updatedAlbum = {
       ...albums[index],
       ...restUpdates
-      // Quedan posibles keys: artist, album, year, duration_s
     };
 
     albums[index] = updatedAlbum;

@@ -30,7 +30,6 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem(KUSER)
       localStorage.removeItem(KTOKEN)
     },
-    /** llamado desde usersStore cuando se edita al usuario logueado */
     _refreshFromUsers(nextUser){
       this.user = nextUser
       localStorage.setItem(KUSER, JSON.stringify(this.user))

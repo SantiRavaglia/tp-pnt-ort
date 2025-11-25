@@ -1,17 +1,13 @@
-<!-- client/src/App.vue -->
 <template>
   <div class="layout">
-    <!-- Sidebar sólo si hay sesión y está abierta -->
     <transition name="sidebar">
       <Sidebar v-if="auth.isAuthenticated && ui.sidebarOpen" />
     </transition>
 
-    <!-- Contenido: ocupa todo cuando no hay sidebar -->
     <main class="content" :class="{ 'full': !auth.isAuthenticated || !ui.sidebarOpen }">
       <router-view />
     </main>
 
-    <!-- Botón flotante para abrir/cerrar (visible si hay sesión) -->
     <button
       v-if="auth.isAuthenticated"
       class="sidebar-toggle"
@@ -22,7 +18,6 @@
       <span v-else>»</span>
     </button>
 
-    <!-- Capa UI global (toasts + modal) -->
     <UiLayer />
   </div>
 </template>
@@ -42,18 +37,15 @@ onMounted(() => { auth.ensureSynced?.() })
 <style scoped>
 .layout { display:flex; min-height:100vh; }
 
-/* Contenido crece; cuando no hay sidebar, centramos (login/register) */
 .content { flex:1; padding: 1rem 1.4rem; transition: padding-left .2s ease }
 .content.full {
   display:flex; justify-content:center; align-items:center;
   background: radial-gradient(circle at center, #0e1a25 0%, #050910 100%);
 }
 
-/* Animación de aparición/desaparición de la sidebar */
 .sidebar-enter-from, .sidebar-leave-to { opacity: 0; transform: translateX(-10px); }
 .sidebar-enter-active, .sidebar-leave-active { transition: all .18s ease; }
 
-/* Botón flotante para toggle */
 .sidebar-toggle {
   position: fixed;
   left: 8px;

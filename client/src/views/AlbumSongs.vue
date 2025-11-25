@@ -18,7 +18,6 @@ const { user, isAuthenticated } = storeToRefs(authStore)
 const albumId = computed(() => Number(route.params.id))
 
 onMounted(async () => {
-  // Por si entrás directo con F5
   if (!albums.value.length) {
     await musicStore.fetchAlbums('', 'artist')
   }
@@ -35,7 +34,6 @@ const albumSongs = computed(() =>
   songs.value.filter(s => s.album_id === albumId.value)
 )
 
-// ---------- Veces escuchado por vos ----------
 const userAlbumListens = computed(() => {
   if (!user.value || !album.value) return 0
 
@@ -46,7 +44,6 @@ const userAlbumListens = computed(() => {
   return rec?.times_listened ?? 0
 })
 
-// ---------- Toast local ----------
 const toastVisible = ref(false)
 const toastMessage = ref('')
 
@@ -62,7 +59,6 @@ function showToast(message) {
   }, 2500)
 }
 
-// ---------- Acciones ----------
 async function escucharAlbum() {
   if (!isAuthenticated.value || !user.value || !album.value) return
 
@@ -77,7 +73,6 @@ function volver() {
 
 <template>
   <div class="album-songs">
-    <!-- Toast -->
     <div v-if="toastVisible" class="toast">
       <span class="dot"></span>
       <span class="toast-text">{{ toastMessage }}</span>
@@ -130,7 +125,6 @@ function volver() {
   padding: 20px;
 }
 
-/* Toast tipo login, arriba a la derecha */
 .toast {
   position: fixed;
   top: 16px;

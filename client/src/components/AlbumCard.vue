@@ -89,7 +89,7 @@ async function addTimesListened() {
   display: inline-block;
   margin-top: 8px;
   padding: 6px 12px;
-  background: #1e40af; /* azul más brillante */
+  background: #1e40af;
   color: #fff;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -98,7 +98,7 @@ async function addTimesListened() {
 }
 
 .view-songs-btn:hover {
-  background: #3b82f6; /* un celeste más moderno */
+  background: #3b82f6;
   transform: translateY(-1px);
 }
 

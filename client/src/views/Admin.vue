@@ -1,4 +1,3 @@
-<!-- client/src/views/Admin.vue -->
 <template>
   <section class="page">
     <h1>Mi cuenta (Admin)</h1>

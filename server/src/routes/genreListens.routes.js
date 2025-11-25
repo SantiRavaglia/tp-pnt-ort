@@ -7,21 +7,6 @@ import {
 
 const router = Router();
 
-/**
- * FORMATO ESPERADO EN albumListens.json:
- *
- * [
- *   {
- *     "genre_id": 19,
- *     "albums_listened": 7,
- *   },
- *   ...
- * ]
- *
- * Clave lógica: (album_id, user_id)
- */
-
-// GET /album-listens - obtener todos los registros
 router.get("/", async (req, res) => {
   try {
     const listens = await readJson(GENRE_LISTENS_FILE);
@@ -33,7 +18,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET /album-listens/:album_id/:user_id - obtener un registro por (album_id, user_id)
 router.get("/:album_id/:user_id", async (req, res) => {
   try {
     const listens = await readJson(GENRE_LISTENS_FILE);
@@ -55,12 +39,10 @@ router.get("/:album_id/:user_id", async (req, res) => {
   }
 });
 
-// POST /album-listens - crear registro de escucha
 router.post("/", async (req, res) => {
   try {
     const { album_id, user_id, times_listened, rating } = req.body;
 
-    // Campos obligatorios según tu formato (rating lo podemos considerar opcional)
     if (
       album_id === undefined ||
       user_id === undefined ||
@@ -74,7 +56,6 @@ router.post("/", async (req, res) => {
 
     const listens = await readJson(GENRE_LISTENS_FILE);
 
-    // Evitamos duplicar la combinación (album_id, user_id)
     if (
       listens.some(
         (l) => l.album_id === album_id && l.user_id === user_id
@@ -90,7 +71,6 @@ router.post("/", async (req, res) => {
       album_id,
       user_id,
       times_listened,
-      // rating puede venir o no en el body
       ...(rating !== undefined ? { rating } : {})
     };
 
@@ -104,7 +84,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PATCH /album-listens/:album_id/:user_id - actualizar parcialmente un registro
 router.patch("/:album_id/:user_id", async (req, res) => {
   try {
     const album_id = Number(req.params.album_id);
@@ -120,14 +99,12 @@ router.patch("/:album_id/:user_id", async (req, res) => {
       return res.status(404).json({ error: "Registro no encontrado" });
     }
 
-    // No permitimos cambiar album_id ni user_id por simplicidad
     const { album_id: _ignoreAlbum_id, user_id: _ignoreUser_id, ...restUpdates } =
       updates;
 
     const updatedListen = {
       ...listens[index],
       ...restUpdates
-      // Permitimos actualizar times_listened y rating principalmente
     };
 
     listens[index] = updatedListen;

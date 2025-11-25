@@ -12,11 +12,9 @@ const highlights = useHighlightsStore()
 const { isAdmin } = storeToRefs(authStore)
 const { albums, albumsWithListens, getAlbums, getGenres, getSongs } = storeToRefs(musicStore)
 
-// búsquedas para la parte de "Agregar"
 const albumSearch  = ref('')
 const artistSearch = ref('')
 
-// Cargar datos
 onMounted(async () => {
   await getGenres.value
   await getAlbums.value
@@ -30,8 +28,6 @@ onMounted(async () => {
   }
 })
 
-// --- RECOMENDADOS ACTUALES ---
-// Todos los álbumes del catálogo, con total_listens (0 si nunca se escuchó)
 const allAlbums = computed(() => {
   const listensById = new Map(
     albumsWithListens.value.map(a => [a.id, a.total_listens])
@@ -43,7 +39,6 @@ const allAlbums = computed(() => {
   }))
 })
 
-// Todos los artistas del catálogo con suma de escuchas de sus álbumes
 const allArtists = computed(() => {
   const map = new Map()
 
@@ -68,7 +63,6 @@ const recommendedArtists = computed(() =>
     .sort((a, b) => b.total_listens - a.total_listens)
 )
 
-// --- LISTAS PARA AGREGAR (ORDENADAS + FILTRADAS) ---
 
 const availableAlbums = computed(() => {
   const q = albumSearch.value.trim().toLowerCase()
@@ -95,7 +89,6 @@ const availableArtists = computed(() => {
     .sort((a, b) => b.total_listens - a.total_listens)
 })
 
-// acciones
 function toggleAlbumHighlight(id) {
   if (!isAdmin.value) return
   highlights.toggleAlbum(id)
@@ -121,9 +114,7 @@ function toggleArtistHighlight(name) {
       <div v-else class="role-chip role-chip--user">Vista usuario</div>
     </header>
 
-    <!-- BLOQUE SUPERIOR: LO QUE YA ESTÁ RECOMENDADO -->
     <section class="reco-grid">
-      <!-- Álbumes recomendados -->
       <article class="panel">
         <div class="panel-header">
           <h2>Álbumes recomendados</h2>
@@ -162,7 +153,6 @@ function toggleArtistHighlight(name) {
         </ul>
       </article>
 
-      <!-- Artistas recomendados -->
       <article class="panel">
         <div class="panel-header">
           <h2>Artistas recomendados</h2>
@@ -200,9 +190,7 @@ function toggleArtistHighlight(name) {
       </article>
     </section>
 
-    <!-- BLOQUE INFERIOR: AGREGAR NUEVOS RECOMENDADOS (SOLO ADMIN) -->
     <section v-if="isAdmin" class="reco-add-grid">
-      <!-- Álbumes -->
       <article class="panel">
         <div class="panel-header">
           <h2>Agregar álbumes recomendados</h2>
@@ -247,7 +235,6 @@ function toggleArtistHighlight(name) {
         </div>
       </article>
 
-      <!-- Artistas -->
       <article class="panel">
         <div class="panel-header">
           <h2>Agregar artistas recomendados</h2>
@@ -299,7 +286,6 @@ function toggleArtistHighlight(name) {
   color: #e5ecff;
 }
 
-/* Header */
 .reco-header {
   display: flex;
   justify-content: space-between;
@@ -321,7 +307,6 @@ function toggleArtistHighlight(name) {
   border-color: #38bdf8;
 }
 
-/* Panels superiores */
 .reco-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -351,7 +336,6 @@ function toggleArtistHighlight(name) {
   opacity: 0.8;
 }
 
-/* Listado de recomendados */
 .reco-list {
   list-style: none;
   padding: 0;
@@ -400,7 +384,6 @@ function toggleArtistHighlight(name) {
   padding: 8px 0;
 }
 
-/* Botones genéricos de esta vista */
 .reco-btn {
   border-radius: 999px;
   font-size: 0.78rem;
@@ -425,7 +408,6 @@ function toggleArtistHighlight(name) {
   background: rgba(250, 204, 21, 0.14);
 }
 
-/* Sección inferior “Agregar” */
 .reco-add-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -460,7 +442,6 @@ function toggleArtistHighlight(name) {
   
 }
 
-/* Lista scrollable solo en la parte inferior */
 .reco-add-list {
   margin-top: 8px;
   max-height: 360px;
@@ -468,7 +449,6 @@ function toggleArtistHighlight(name) {
   padding-right: 4px;
 }
 
-/* Scrollbar finito */
 .reco-add-list::-webkit-scrollbar {
   width: 6px;
 }

@@ -11,7 +11,6 @@ const highlights = useHighlightsStore()
 
 const { isAdmin } = storeToRefs(authStore)
 
-// Getters / helpers del store
 const {
   getAlbums,
   getGenres,
@@ -23,7 +22,6 @@ const {
   mostListenedArtist
 } = storeToRefs(musicStore)
 
-// 👉 límite configurable para los rankings
 const rankLimit = ref(5)
 const rankOptions = [5, 10, 20]
 
@@ -40,12 +38,10 @@ onMounted(async () => {
   }
 })
 
-// Álbumes ordenados por escuchas, recortados por el límite
 const rankedAlbums = computed(() =>
   albumsWithListens.value.slice(0, rankLimit.value)
 )
 
-// Artistas ordenados por escuchas (sumando todos sus álbumes)
 const rankedArtists = computed(() => {
   const totals = new Map()
 
@@ -60,7 +56,6 @@ const rankedArtists = computed(() => {
     .slice(0, rankLimit.value)
 })
 
-// Highlights
 function toggleAlbumHighlight(id) {
   if (!isAdmin.value) return
   highlights.toggleAlbum(id)
@@ -85,7 +80,6 @@ function toggleArtistHighlight(name) {
       <div v-else class="role-chip role-chip--user">Vista usuario</div>
     </header>
 
-    <!-- KPIs -->
     <section class="kpis">
       <div class="kpi-card">
         <div class="kpi-label">Reproducciones totales</div>
@@ -118,7 +112,6 @@ function toggleArtistHighlight(name) {
       </div>
     </section>
 
-    <!-- Selector global para el Top -->
     <section class="rank-toolbar">
       <label>
         Mostrar
@@ -132,7 +125,6 @@ function toggleArtistHighlight(name) {
     </section>
 
     <section class="grid">
-      <!-- Top álbumes -->
       <article class="panel">
         <div class="panel-header">
           <h2>Top {{ rankLimit }} álbumes</h2>
@@ -176,7 +168,6 @@ function toggleArtistHighlight(name) {
         </ul>
       </article>
 
-      <!-- Top artistas -->
       <article class="panel">
         <div class="panel-header">
           <h2>Top {{ rankLimit }} artistas</h2>
@@ -289,7 +280,6 @@ function toggleArtistHighlight(name) {
   opacity: 0.85;
 }
 
-/* Selector Top N */
 .rank-toolbar {
   margin-bottom: 12px;
   display: flex;

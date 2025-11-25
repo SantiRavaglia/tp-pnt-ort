@@ -1,4 +1,3 @@
-<!-- client/src/views/Register.vue -->
 <template>
   <div class="auth-page">
     <h1 class="brand">SpotifyListens</h1>

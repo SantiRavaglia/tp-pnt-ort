@@ -88,7 +88,6 @@ const handleSubmit = async () => {
   gap: 18px;
 }
 
-/* INPUT + BOTÓN */
 .search-input-group {
   display: flex;
   gap: 12px;
@@ -132,7 +131,6 @@ const handleSubmit = async () => {
   cursor: not-allowed;
 }
 
-/* RADIOS MODERNOS */
 .search-type-group,
 .search-entity-group {
   display: flex;
@@ -152,7 +150,6 @@ const handleSubmit = async () => {
   cursor: pointer;
 }
 
-/* radio base */
 .search-type-group input[type="radio"],
 .search-entity-group input[type="radio"] {
   appearance: none;
@@ -165,13 +162,11 @@ const handleSubmit = async () => {
   transition: 0.2s;
 }
 
-/* hover */
 .search-type-group input[type="radio"]:hover,
 .search-entity-group input[type="radio"]:hover {
   border-color: #9ca3af;
 }
 
-/* círculo interno */
 .search-type-group input[type="radio"]:checked::before,
 .search-entity-group input[type="radio"]:checked::before {
   content: "";

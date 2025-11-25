@@ -7,7 +7,6 @@ import { useAuthStore } from '../stores/auth'
 const musicStore = useMusicStore()
 const authStore = useAuthStore()
 
-// solo saco isLoading del store como ref
 const { isLoading } = storeToRefs(musicStore)
 const { user } = storeToRefs(authStore)
 
@@ -32,13 +31,11 @@ function formatDuration(seconds) {
   return `${seconds} segundo(s)`
 }
 
-// ⬇️ Álbumes por usuario logueado
 const albumStats = computed(() => {
   if (!user.value) return []
   return musicStore.albumsWithListensByUser(user.value.id)
 })
 
-// ⬇️ Géneros por usuario logueado 
 const genreStats = computed(() => {
   if (!user.value) return []
   return musicStore.genreTimeByUser(user.value.id)
@@ -80,7 +77,6 @@ onMounted(async () => {
 
     <p v-if="isStatsLoading">Cargando datos...</p>
 
-    <!-- TAB ÁLBUMES -->
     <template v-else-if="mode === 'albums'">
       <template v-if="!user">
         <p>Debés estar logueado para ver estadísticas por álbum.</p>
@@ -114,7 +110,6 @@ onMounted(async () => {
       </template>
     </template>
 
-    <!-- TAB GÉNEROS -->
     <template v-else>
       <p v-if="!user">
         Debés estar logueado para ver estadísticas por género.

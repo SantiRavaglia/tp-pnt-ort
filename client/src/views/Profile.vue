@@ -1,4 +1,3 @@
-<!-- client/src/views/Profile.vue -->
 <template>
   <section class="page">
     <h1>Mi perfil</h1>

@@ -7,15 +7,12 @@
 
       <RouterLink v-if="auth.isAuthenticated" to="/estadisticas/musica-escuchada" class="nav-btn">Estadísticas</RouterLink>
 
-      <!-- si es admin, mostrar "Perfiles"; si no, "Perfil" -->
       <RouterLink v-if="auth.isAdmin" to="/perfiles" class="nav-btn">Perfiles</RouterLink>
       <RouterLink v-else-if="auth.isAuthenticated" to="/perfil" class="nav-btn">Perfil</RouterLink>
         <router-link to="/recomendados" class="nav-item">Recomendados</router-link>
 
-      <!-- Admin (edición de mi cuenta) visible sólo para admins -->
       <RouterLink v-if="auth.isAdmin" to="/admin" class="nav-btn">Admin</RouterLink>
 
-      <!-- Login o Logout -->
       <RouterLink v-if="!auth.isAuthenticated" to="/login" class="nav-btn">Login</RouterLink>
       <button v-else class="logout-btn" @click="confirmLogout">Salir</button>
     </nav>
@@ -81,7 +78,6 @@ async function confirmLogout() {
   background: #16212f;
 }
 
-/* botón "Salir" */
 .logout-btn {
   margin-top: 1rem;
   background: #7a1f1f;

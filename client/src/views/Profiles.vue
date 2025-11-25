@@ -109,7 +109,7 @@ async function saveRow(id) {
     ui.toast('Cambios guardados', 'success')
   } catch (e) {
     ui.toast(e.message, 'error')
-    drafts[id] = { name: u.name, email: u.email, role: u.role } // rollback visual
+    drafts[id] = { name: u.name, email: u.email, role: u.role }
   }
 }
 
@@ -133,8 +133,8 @@ async function removeRow(id) {
 }
 
 function disableDelete(u){
-  if (auth.user?.id === u.id) return true // no borrarse a sí mismo
-  return (u.role === 'admin' && users.admins.length <= 1) // no dejar sin admins
+  if (auth.user?.id === u.id) return true
+  return (u.role === 'admin' && users.admins.length <= 1)
 }
 </script>
 
