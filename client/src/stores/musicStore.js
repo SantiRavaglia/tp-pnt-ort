@@ -346,6 +346,20 @@ export const useMusicStore = defineStore('music', {
       return this.albums;
     },
 
+    getSongs() {
+      if (!this.songs.length) {
+        this.fetchSongs();
+      } 
+      return this.songs;
+    },
+
+    getGenres() {
+      if (!this.genres.length) {
+        this.fetchGenres();
+      } 
+      return this.genres;
+    },
+
     topAlbums() {
       return this.albumsWithListens.slice(0, 5)
     },

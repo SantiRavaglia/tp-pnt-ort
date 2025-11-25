@@ -13,7 +13,6 @@ const props = defineProps({
 const musicStore = useMusicStore()
 const { albums } = storeToRefs(musicStore)
 
-// Nombre del álbum
 const albumName = computed(() => {
   if (!albums.value?.length) return 'Álbum desconocido'
 
@@ -23,28 +22,21 @@ const albumName = computed(() => {
   return a ? a.album : 'Álbum desconocido'
 })
 
-// Nombre de la canción (probamos varias claves)
 const songTitle = computed(() => {
   return (
-    props.song.name ??
-    props.song.title ??
-    props.song.song_name ??
-    'Canción desconocida'
+    props.song.name
   )
 })
 
-// Duración formateada
 const formattedDuration = computed(() => {
   const durSeconds = props.song.duration_s ?? props.song.durationSeconds
 
-  // Si viene en segundos → mm:ss
   if (typeof durSeconds === 'number' && durSeconds > 0) {
     const m = Math.floor(durSeconds / 60)
     const s = durSeconds % 60
     return `${m}:${String(s).padStart(2, '0')}`
   }
 
-  // Si viene como string (ej. "4:47") la mostramos directo
   if (typeof props.song.duration === 'string' && props.song.duration.trim() !== '') {
     return props.song.duration
   }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useMusicStore } from '../stores/musicStore'
 
 const musicStore = useMusicStore()
@@ -31,7 +31,7 @@ const handleSubmit = async () => {
   else if (searchEntity.value === 'genres') {
     await musicStore.searchGenres(localQuery.value)
   }
-  else {
+  else if (searchEntity.value === 'songs') {
     await musicStore.searchSongs(localQuery.value)
   }
 }

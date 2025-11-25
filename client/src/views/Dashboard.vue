@@ -16,6 +16,8 @@ const {
   topAlbums,
   topArtists,
   getAlbums,
+  getGenres,
+  getSongs,
   albumsWithListens,
   totalPlays,
   albumsWithListensCount,
@@ -25,14 +27,11 @@ const {
 
 onMounted(async () => {
   // Álbumes + escuchas
+  await getGenres.value;
   await getAlbums.value;
+  await getSongs.value;
   if (!musicStore.albumListens.length) {
     await musicStore.fetchAlbumListens()
-  }
-
-  // Géneros + escuchas por género
-  if (!musicStore.genres.length) {
-    await musicStore.fetchGenres()
   }
   if (!musicStore.genreListens.length) {
     await musicStore.fetchGenreListens()

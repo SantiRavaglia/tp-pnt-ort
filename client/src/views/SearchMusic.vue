@@ -6,13 +6,12 @@ import { useMusicStore } from '../stores/musicStore'
 import { storeToRefs } from 'pinia'
 
 const musicStore = useMusicStore()
-const { getAlbums } = storeToRefs(musicStore)
+const { getAlbums, getSongs, getGenres } = storeToRefs(musicStore)
 
 onMounted(async () => {
-  if (!musicStore.genres.length) {
-    await musicStore.fetchGenres();
+    await getGenres.value;
     await getAlbums.value;
-  }
+    await getSongs.value;
 })
 </script>
 
