@@ -10,6 +10,7 @@
       <!-- si es admin, mostrar "Perfiles"; si no, "Perfil" -->
       <RouterLink v-if="auth.isAdmin" to="/perfiles" class="nav-btn">Perfiles</RouterLink>
       <RouterLink v-else-if="auth.isAuthenticated" to="/perfil" class="nav-btn">Perfil</RouterLink>
+        <router-link to="/recomendados" class="nav-item">Recomendados</router-link>
 
       <!-- Admin (edición de mi cuenta) visible sólo para admins -->
       <RouterLink v-if="auth.isAdmin" to="/admin" class="nav-btn">Admin</RouterLink>

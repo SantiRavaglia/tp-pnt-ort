@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMusicStore } from '../stores/musicStore'
 import { useAuthStore } from '../stores/auth'
@@ -11,10 +11,8 @@ const highlights = useHighlightsStore()
 
 const { isAdmin } = storeToRefs(authStore)
 
-// 👇 Getters del store (ya reactivos)
+// Getters / helpers del store
 const {
-  topAlbums,
-  topArtists,
   getAlbums,
   getGenres,
   getSongs,
@@ -25,11 +23,15 @@ const {
   mostListenedArtist
 } = storeToRefs(musicStore)
 
+// 👉 límite configurable para los rankings
+const rankLimit = ref(5)
+const rankOptions = [5, 10, 20]
+
 onMounted(async () => {
-  // Álbumes + escuchas
-  await getGenres.value;
-  await getAlbums.value;
-  await getSongs.value;
+  await getGenres.value
+  await getAlbums.value
+  await getSongs.value
+
   if (!musicStore.albumListens.length) {
     await musicStore.fetchAlbumListens()
   }
@@ -38,6 +40,27 @@ onMounted(async () => {
   }
 })
 
+// Álbumes ordenados por escuchas, recortados por el límite
+const rankedAlbums = computed(() =>
+  albumsWithListens.value.slice(0, rankLimit.value)
+)
+
+// Artistas ordenados por escuchas (sumando todos sus álbumes)
+const rankedArtists = computed(() => {
+  const totals = new Map()
+
+  for (const album of albumsWithListens.value) {
+    const key = album.artist
+    const prev = totals.get(key) || 0
+    totals.set(key, prev + (album.total_listens || 0))
+  }
+
+  return Array.from(totals, ([name, total_listens]) => ({ name, total_listens }))
+    .sort((a, b) => b.total_listens - a.total_listens)
+    .slice(0, rankLimit.value)
+})
+
+// Highlights
 function toggleAlbumHighlight(id) {
   if (!isAdmin.value) return
   highlights.toggleAlbum(id)
@@ -95,17 +118,30 @@ function toggleArtistHighlight(name) {
       </div>
     </section>
 
+    <!-- Selector global para el Top -->
+    <section class="rank-toolbar">
+      <label>
+        Mostrar
+        <select v-model.number="rankLimit">
+          <option v-for="opt in rankOptions" :key="opt" :value="opt">
+            Top {{ opt }}
+          </option>
+        </select>
+        primeros
+      </label>
+    </section>
+
     <section class="grid">
-      <!-- Top 5 álbumes -->
+      <!-- Top álbumes -->
       <article class="panel">
         <div class="panel-header">
-          <h2>Top 5 álbumes</h2>
+          <h2>Top {{ rankLimit }} álbumes</h2>
           <span class="panel-sub">Ordenados por escuchas totales</span>
         </div>
 
         <ul class="list">
           <li
-            v-for="(album, index) in topAlbums"
+            v-for="(album, index) in rankedAlbums"
             :key="album.id"
             class="list-item"
             :class="{ highlighted: highlights.isAlbumHighlighted(album.id) }"
@@ -140,16 +176,16 @@ function toggleArtistHighlight(name) {
         </ul>
       </article>
 
-      <!-- Top 5 artistas -->
+      <!-- Top artistas -->
       <article class="panel">
         <div class="panel-header">
-          <h2>Top 5 artistas</h2>
+          <h2>Top {{ rankLimit }} artistas</h2>
           <span class="panel-sub">Sumando escuchas de todos sus álbumes</span>
         </div>
 
         <ul class="list">
           <li
-            v-for="(artist, index) in topArtists"
+            v-for="(artist, index) in rankedArtists"
             :key="artist.name"
             class="list-item"
             :class="{ highlighted: highlights.isArtistHighlighted(artist.name) }"
@@ -186,7 +222,7 @@ function toggleArtistHighlight(name) {
     <section class="note">
       <p>
         Tus estadísticas personales están en la vista
-        <strong>/estadisticas</strong>.
+        <strong> /estadisticas </strong>.
       </p>
     </section>
   </div>
@@ -251,6 +287,24 @@ function toggleArtistHighlight(name) {
   font-size: 0.8rem;
   margin-top: 2px;
   opacity: 0.85;
+}
+
+/* Selector Top N */
+.rank-toolbar {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.rank-toolbar select {
+  margin: 0 4px;
+  background: #020617;
+  color: #e5ecff;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+  padding: 3px 8px;
 }
 
 .grid {

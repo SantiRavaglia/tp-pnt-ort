@@ -251,6 +251,26 @@ export const useMusicStore = defineStore('music', {
         .sort((a, b) => b.total_listens - a.total_listens)
     },
 
+     artistsByListens() {
+    const totals = new Map()
+
+    for (const album of this.albumsWithListens) {
+      const key = album.artist
+      const prev = totals.get(key) || 0
+      totals.set(key, prev + album.total_listens)
+    }
+
+    return Array.from(
+      totals,
+      ([name, total_listens]) => ({ name, total_listens })
+    ).sort((a, b) => b.total_listens - a.total_listens)
+  },
+
+  
+  topArtists() {
+    return this.artistsByListens.slice(0, 5)
+  },
+
     albumsWithListensByUser: (s) => (userId) => {
       if (!userId) return []
 

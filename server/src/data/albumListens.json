@@ -313,5 +313,25 @@
     "album_id": 15,
     "user_id": 5,
     "times_listened": 22
+  },
+  {
+    "album_id": 8,
+    "user_id": 1,
+    "times_listened": 2
+  },
+  {
+    "album_id": 24,
+    "user_id": 1,
+    "times_listened": 2
+  },
+  {
+    "album_id": 21,
+    "user_id": 1,
+    "times_listened": 1
+  },
+  {
+    "album_id": 29,
+    "user_id": 1,
+    "times_listened": 3
   }
 ]
